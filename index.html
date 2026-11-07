@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KSV Siemens Bewerbe</title>
+<meta name="theme-color" content="#006a72">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="KSV Bewerbe">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<style>
+:root{
+  --bg:#f4f6f7; --card:#fff; --ink:#1b2a30; --muted:#5d6f76; --line:#dde4e7;
+  --acc:#00808a; --acc2:#006a72; --accsoft:#e3f3f4; --warn:#b4561b; --warnsoft:#fbeee5;
+  --ok:#2c7a3f; --gold:#c9a227; --silver:#9aa4a8; --bronze:#b07a45; --radius:10px;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#121a1d;--card:#1b2529;--ink:#e6eef0;--muted:#97a9af;--line:#2c3a3f;--accsoft:#163538;--warnsoft:#3a271b;}
+}
+*{box-sizing:border-box}
+body{margin:0;font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:var(--acc2);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;position:sticky;top:0;z-index:5}
+header h1{font-size:18px;margin:0;font-weight:650;letter-spacing:.2px}
+.logo{height:52px;width:52px;border-radius:50%;background:#fff;object-fit:cover;object-position:center;transform:scale(1);padding:0;box-shadow:0 1px 4px rgba(0,0,0,.25);flex:0 0 auto}
+header .brand{display:flex;align-items:center;gap:10px;cursor:pointer}
+@media (max-width:560px){.logo{height:38px;width:38px}header h1{font-size:16px}}
+header nav{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+header nav button{background:transparent;color:#fff;border:1px solid transparent;padding:6px 12px;border-radius:8px;cursor:pointer;font:inherit}
+header nav button.on{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.3)}
+.badge{font-size:12px;padding:2px 8px;border-radius:99px;background:rgba(255,255,255,.18)}
+main{max-width:1150px;margin:0 auto;padding:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:14px}
+h2{font-size:20px;margin:0 0 10px} h3{font-size:16px;margin:16px 0 8px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.row>*{flex:1 1 160px}
+label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:3px}
+button,input,select,textarea,a{touch-action:manipulation}
+@media (pointer:coarse){input,select,textarea{font-size:16px!important}button.b{min-height:40px}}
+.ser-small{white-space:normal}
+@media (max-width:820px){.dg-bisher{display:none}}
+input,select,textarea{width:100%;font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--acc);outline-offset:-1px}
+button.b{font:inherit;padding:8px 14px;border-radius:8px;border:1px solid var(--acc);background:var(--acc);color:#fff;cursor:pointer;white-space:nowrap}
+button.b:hover{background:var(--acc2)}
+button.g{background:transparent;color:var(--acc);}
+button.g:hover{background:var(--accsoft)}
+button.d{border-color:var(--warn);background:transparent;color:var(--warn)}
+button.sm{padding:4px 10px;font-size:13px}
+button:disabled{opacity:.5;cursor:default}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);font-weight:600}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+tr.click{cursor:pointer} tr.click:hover{background:var(--accsoft)}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:4px 0 14px;flex-wrap:wrap}
+.tabs button{font:inherit;background:none;border:none;padding:9px 14px;cursor:pointer;color:var(--muted);border-bottom:3px solid transparent}
+.tabs button.on{color:var(--acc);border-bottom-color:var(--acc);font-weight:600}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.chip{font:inherit;font-size:13px;padding:5px 11px;border-radius:99px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+.chip.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.muted{color:var(--muted)} .small{font-size:13px}
+.pill{display:inline-block;font-size:12px;padding:1px 8px;border-radius:99px;background:var(--accsoft);color:var(--acc2);white-space:nowrap}
+@media (prefers-color-scheme:dark){.pill{color:#8fd6da}}
+.pill.w{background:var(--warnsoft);color:var(--warn)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.bw{border:1px solid var(--line);border-radius:var(--radius);padding:14px;background:var(--card);cursor:pointer}
+.bw:hover{border-color:var(--acc)}
+.bw h4{margin:0 0 4px;font-size:16px}
+.series{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
+.series input{text-align:center;font-size:18px;font-variant-numeric:tabular-nums;padding:10px 4px}
+.series input.bad,input.shot.bad{border-color:var(--warn);background:var(--warnsoft);color:var(--warn);font-weight:700;outline-color:var(--warn)}
+.total{font-size:34px;font-weight:700;color:var(--acc);font-variant-numeric:tabular-nums}
+.rank{display:inline-flex;width:26px;height:26px;border-radius:50%;align-items:center;justify-content:center;font-weight:700;font-size:13px;background:var(--line)}
+.r1{background:var(--gold);color:#fff}.r2{background:var(--silver);color:#fff}.r3{background:var(--bronze);color:#fff}
+.notice{background:var(--warnsoft);border-left:4px solid var(--warn);padding:8px 12px;border-radius:6px;margin:8px 0;font-size:13.5px}
+.info{background:var(--accsoft);border-left:4px solid var(--acc);padding:8px 12px;border-radius:6px;margin:8px 0;font-size:13.5px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-start;justify-content:center;padding:40px 12px;z-index:20;overflow:auto}
+.modal .card{max-width:640px;width:100%}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#1b2a30;color:#fff;padding:10px 16px;border-radius:8px;opacity:0;transition:.25s;pointer-events:none;z-index:30;max-width:90vw}
+#toast.on{opacity:1}
+.right{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:12px}
+.flex{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.sp{flex:1}
+.list-pick{max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:8px}
+.list-pick div{padding:7px 10px;border-bottom:1px solid var(--line);cursor:pointer}
+.list-pick div:hover{background:var(--accsoft)}
+.tw{overflow-x:auto}
+.ser-small{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand" id="brand" title="Zur Bewerbsübersicht"><img class="logo" id="kopfLogo" alt="KSV Logo"><h1>KSV Siemens · Bewerbe</h1></div>
+  <span class="badge" id="mode">Lokal</span>
+  <nav>
+    <button data-v="bewerbe">Bewerbe</button>
+    <button data-v="schuetzen">Schützen</button>
+    <button data-v="daten">Daten</button>
+  </nav>
+</header>
+<main id="app"></main>
+<div id="toast"></div>
+<div id="modalroot"></div>
+
+<script>
+"use strict";
+/* ================= Grunddaten ================= */
+const COLLS=["bewerbe","schuetzen","ergebnisse"];
+const LK="ksv_bewerbe_v1";
+const S={bewerbe:{},schuetzen:{},ergebnisse:{}};
+let backend="local", db=null, downloads=null;
+const UI={view:"bewerbe",bewerbId:null,tab:"wertung",filter:"gesamt",schuetzeEdit:null,erfassSid:null,editErg:null,suche:"",erfMode:"serie",dg:null,dgSerie:null};
+
+const KLASSEN={
+  F:"Frauen",SW1:"Seniorinnen 1",SW2:"Seniorinnen 2",SW3:"Seniorinnen 3",SW4:"Seniorinnen 4",
+  M:"Männer",SM1:"Senioren 1",SM2:"Senioren 2",SM3:"Senioren 3",SM4:"Senioren 4",
+  I:"Inter",G:"Gäste"
+};
+const KLASSEN_ORD=["F","SW1","SW2","SW3","SW4","M","SM1","SM2","SM3","SM4","I","G"];
+
+const PROGRAMME={
+  "3030voll":{name:"FFWGK 30/30 – 60 Schuss Vollprogramm",serien:[...rep(6,"150 s"),...rep(6,"20 s")]},
+  "3030halb":{name:"FFWGK 30/30 – 30 Schuss Halbprogramm",serien:[...rep(3,"150 s"),...rep(3,"20 s")]},
+  "2020":{name:"FFWGK 20/20 – 40 Schuss Vollprogramm",serien:[...rep(4,"150 s Präz."),...rep(4,"20 s")]},
+  "frei":{name:"Freies Programm",serien:null}
+};
+function rep(n,l){return Array.from({length:n},(_,i)=>({label:l+" "+(i+1),schuss:5,maxRing:10}))}
+
+const MODI={
+  best:"Bestes Einzelergebnis zählt",
+  bestN:"Summe der besten N Ergebnisse",
+  sum:"Summe aller Ergebnisse",
+  avg:"Durchschnitt aller Ergebnisse",
+  last:"Letztes Ergebnis zählt"
+};
+
+/* ================= Helfer ================= */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const today=()=>new Date().toISOString().slice(0,10);
+const fmtD=d=>d?d.split("-").reverse().join(".") : "";
+const num=(v,dec)=>v==null||isNaN(v)?"–":(dec?Number(v).toFixed(1).replace(".",","):String(Math.round(v*10)/10).replace(".",","));
+function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("on");clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove("on"),2600)}
+const sName=s=>s?`${s.nachname} ${s.vorname}`.trim():"(unbekannt)";
+
+/* ================= Speicher ================= */
+function loadLocal(){try{const j=JSON.parse(localStorage.getItem(LK)||"null");if(j)COLLS.forEach(k=>S[k]=j[k]||{})}catch(e){}}
+function saveLocal(){try{localStorage.setItem(LK,JSON.stringify(S))}catch(e){}}
+function localHasData(){try{const j=JSON.parse(localStorage.getItem(LK)||"null");return j&&COLLS.some(k=>j[k]&&Object.keys(j[k]).length)}catch(e){return false}}
+const queue={};
+function dbWrite(path,fn){const p=(queue[path]||Promise.resolve()).then(fn).catch(e=>{
+  const c=e&&e.code;toast(c==="quota_exceeded"?"Speicher voll – bitte alte Daten exportieren/löschen.":"Speichern fehlgeschlagen ("+(c||"Fehler")+")");});
+  queue[path]=p;return p}
+function put(coll,obj){
+  obj.geaendert=new Date().toISOString();
+  S[coll][obj.id]=JSON.parse(JSON.stringify(obj));
+  if(backend==="db") dbWrite(coll+"/"+obj.id,()=>db.collection(coll).doc(obj.id).set(S[coll][obj.id]));
+  else saveLocal();
+  render(true);
+}
+function del(coll,id){
+  delete S[coll][id];
+  if(backend==="db") dbWrite(coll+"/"+id,()=>db.collection(coll).doc(id).delete());
+  else saveLocal();
+  render(true);
+}
+async function initDb(){
+  if(!window.claude||!window.claude.use){return}
+  try{downloads=await window.claude.use("downloads")}catch(e){}
+  let d=null;try{d=await window.claude.use("db")}catch(e){}
+  if(!d)return;
+  db=d;backend="db";COLLS.forEach(k=>S[k]={});
+  setMode("Cloud – lädt …");
+  let pending=new Set(COLLS);
+  const timer=setTimeout(()=>{if(pending.size)setMode("Cloud – nicht erreichbar");},10000);
+  COLLS.forEach(k=>{
+    db.collection(k).onSnapshot(snap=>{
+      const o={};snap.docs.forEach(dc=>{if(dc.exists)o[dc.id]=dc.data()});S[k]=o;
+      if(!snap.metadata.fromCache){pending.delete(k);if(!pending.size){clearTimeout(timer);setMode("Cloud ✓")}}
+      render(true);
+    },err=>{clearTimeout(timer);setMode("Cloud – Fehler");toast("Cloud-Speicher: "+err.code)});
+  });
+}
+function setMode(t){$("#mode").textContent=t}
+
+/* ================= Fachlogik ================= */
+function refJahr(b){return Number(b.jahr)||Number((b.start||today()).slice(0,4))}
+function altersKlasse(s,b){
+  if(!s.geburtsjahr)return s.geschlecht==="w"?"F":"M";
+  const a=refJahr(b)-Number(s.geburtsjahr); // im Kalenderjahr erreichtes Alter
+  const w=s.geschlecht==="w";
+  if(a>=77&&b.s4!==false)return w?"SW4":"SM4";
+  if(a>=70)return w?"SW3":"SM3";
+  if(a>=60)return w?"SW2":"SM2";
+  if(a>=50)return w?"SW1":"SM1";
+  return w?"F":"M";
+}
+function maennerKlasse(s,b){return altersKlasse({...s,geschlecht:"m"},b)}
+function teilnahme(b,sid){return (b.teilnehmer||[]).find(t=>t.sid===sid)}
+function klasseVon(b,sid){
+  const t=teilnahme(b,sid);const s=S.schuetzen[sid];if(!s)return "M";
+  if(t&&t.gast)return "G";
+  if(t&&t.klasse)return t.klasse;
+  if(s.geschlecht==="x"){
+    if(b.interFallback!==false){
+      const nInter=(b.teilnehmer||[]).filter(x=>{const y=S.schuetzen[x.sid];return y&&y.geschlecht==="x"&&!x.gast}).length;
+      if(nInter<5)return maennerKlasse(s,b);
+    }
+    return "I";
+  }
+  return altersKlasse(s,b);
+}
+/* Serien-Eingabe: Summe ("47"), Summe + X ("47xx" = 47 Ringe, davon 2 X) oder Einzelschüsse ("x 10 9 9 8"). x = 10er-Treffer (Innenzehner). */
+function parseSerie(str,se,zehntel){
+  let s=String(str??"").trim().toLowerCase();if(!s)return {leer:true,ok:true};
+  s=s.replace(/(\d),(\d)/g,"$1.$2");
+  const maxR=Number(se.maxRing)||10,sch=Number(se.schuss)||5,mx=maxSerie(se);
+  const parts=s.split(/[\s,;+\/]+/).filter(Boolean);let v=0,x=0;
+  if(parts.length>1){
+    if(parts.length>sch)return {ok:false};
+    for(const p of parts){if(/^x+$/.test(p)){x+=p.length;v+=maxR*p.length}else if(/^\d+(\.\d+)?$/.test(p)&&+p<=maxR){v+=+p}else return {ok:false}}
+  }else{
+    const m=parts[0].match(/^(x*)(\d+(?:\.\d+)?)?(x*)$/);if(!m)return {ok:false};
+    x=m[1].length+m[3].length;v=m[2]!=null?+m[2]:maxR*x;
+  }
+  v=Math.round(v*10)/10;
+  const ok=v>=0&&v<=mx&&x<=sch&&x*maxR<=v&&(zehntel||Number.isInteger(v));
+  return {ok,v,x};
+}
+function serText(v,x){return v==null||v===""?"":String(v).replace(".",",")+(x?"x".repeat(x):"")}
+function serAnzeige(v,x){return v==null||v===""?"·":num(v)+(x?`<sup style="color:var(--acc);font-weight:700">${x}x</sup>`:"")}
+function xSumme(r){return (r.xs||[]).reduce((a,v)=>a+(Number(v)||0),0)}
+function maxSerie(se){return (Number(se.schuss)||5)*(Number(se.maxRing)||10)}
+function maxGesamt(b){return (b.serien||[]).reduce((a,s)=>a+maxSerie(s),0)}
+function tiebreakCmp(a,b){ // a,b Serienarrays – FFWGK 8.2.1: Summe der letzten beiden Serien, dann davor ...
+  const n=Math.max(a.length,b.length);
+  for(let i=n-1;i>=0;i-=2){
+    const sa=(a[i]||0)+(a[i-1]||0), sb=(b[i]||0)+(b[i-1]||0);
+    if(sa!==sb)return sb-sa;
+  }
+  return 0;
+}
+function auswertung(b){
+  const erg=Object.values(S.ergebnisse).filter(r=>r.bewerbId===b.id);
+  const per={};
+  erg.forEach(r=>{if(r.sid&&S.schuetzen[r.sid]&&komplett(b,r))(per[r.sid]=per[r.sid]||[]).push(r)});
+  const rows=[];
+  Object.keys(per).forEach(sid=>{
+    const list=per[sid].sort((x,y)=>(x.datum||"").localeCompare(y.datum||"")||(x.erstellt||"").localeCompare(y.erstellt||""));
+    const sorted=[...list].sort((x,y)=>y.total-x.total||xSumme(y)-xSumme(x)||tiebreakCmp(x.serien,y.serien));
+    let wert,zaehlt;
+    switch(b.modus){
+      case "bestN":{const n=Math.max(1,Number(b.bestN)||2);zaehlt=sorted.slice(0,n);wert=zaehlt.reduce((a,r)=>a+r.total,0);break}
+      case "sum":zaehlt=list;wert=list.reduce((a,r)=>a+r.total,0);break;
+      case "avg":zaehlt=list;wert=list.reduce((a,r)=>a+r.total,0)/list.length;break;
+      case "last":zaehlt=[list[list.length-1]];wert=zaehlt[0].total;break;
+      default:zaehlt=[sorted[0]];wert=sorted[0].total;
+    }
+    const tb=b.modus==="last"?zaehlt[0].serien:sorted[0].serien;
+    const xs=b.modus==="best"?xSumme(sorted[0]):b.modus==="last"?xSumme(zaehlt[0]):zaehlt.reduce((a,r)=>a+xSumme(r),0);
+    const s=S.schuetzen[sid];
+    rows.push({sid,s,wert,tb,xs,antritte:list.length,bestes:sorted[0].total,zaehlt,klasse:klasseVon(b,sid),
+      geschlecht:s?s.geschlecht:"m",gast:!!(teilnahme(b,sid)||{}).gast,
+      unvollstaendig:b.modus==="bestN"&&list.length<(Number(b.bestN)||2)});
+  });
+  rows.sort((x,y)=>y.wert-x.wert||y.xs-x.xs||tiebreakCmp(x.tb,y.tb)||sName(x.s).localeCompare(sName(y.s)));
+  return rows;
+}
+function rangiere(rows){
+  let last=null,rang=0;
+  return rows.map((r,i)=>{
+    if(!last||r.wert!==last.wert||r.xs!==last.xs||tiebreakCmp(r.tb,last.tb)!==0)rang=i+1;
+    last=r;return {...r,rang};
+  });
+}
+
+/* ================= Rendering ================= */
+document.querySelectorAll("header nav button").forEach(bt=>bt.onclick=()=>{UI.view=bt.dataset.v;UI.bewerbId=null;location.hash=bt.dataset.v;render()});
+document.addEventListener("input",e=>{if(e.target&&e.target.id&&e.target.closest&&e.target.closest("#app"))e.target.dataset.dirty="1"});
+function clearDirty(){document.querySelectorAll("#app [data-dirty]").forEach(e=>delete e.dataset.dirty)}
+function render(keepInputs){
+  const dirty={};if(keepInputs)document.querySelectorAll("#app [data-dirty='1']").forEach(e=>{if(e.id&&e.tagName!=="SELECT"&&e.type!=="checkbox")dirty[e.id]=e.value});
+  document.querySelectorAll("header nav button").forEach(bt=>bt.classList.toggle("on",bt.dataset.v===UI.view));
+  const a=$("#app");
+  const fa=document.activeElement; const keep=fa&&fa.id?{id:fa.id,ss:fa.selectionStart,se:fa.selectionEnd}:null;
+  if(UI.view==="bewerbe")a.innerHTML=UI.bewerbId&&S.bewerbe[UI.bewerbId]?vBewerb():vBewerbe();
+  else if(UI.view==="schuetzen")a.innerHTML=vSchuetzen();
+  else a.innerHTML=vDaten();
+  bind();
+  Object.entries(dirty).forEach(([id,v])=>{const e=document.getElementById(id);if(e&&e.value!==v){e.value=v;e.dataset.dirty="1";if(e.classList.contains("ser"))e.dispatchEvent(new Event("input"));if(e.classList.contains("shot"))e.dispatchEvent(new Event("change"))}else if(e)e.dataset.dirty="1"});
+  if(keep){const e=document.getElementById(keep.id);if(e){e.focus();try{e.setSelectionRange(keep.ss,keep.se)}catch(x){}}}
+}
+
+function vBewerbe(){
+  const list=Object.values(S.bewerbe).sort((a,b)=>(b.start||"").localeCompare(a.start||""));
+  const aktiv=list.filter(b=>b.status!=="abgeschlossen"),alt=list.filter(b=>b.status==="abgeschlossen");
+  const card=b=>{
+    const n=(b.teilnehmer||[]).length, e=Object.values(S.ergebnisse).filter(r=>r.bewerbId===b.id).length;
+    return `<div class="bw" data-open="${b.id}"><h4>${esc(b.name)}</h4>
+    <div class="small muted">${esc(PROGRAMME[b.programm]?.name||"Freies Programm")}</div>
+    <div class="small" style="margin-top:6px">${fmtD(b.start)}${b.ende?" – "+fmtD(b.ende):""}</div>
+    <div class="flex" style="margin-top:8px"><span class="pill">${n} Teilnehmer</span><span class="pill">${e} Antritte</span>
+    ${b.umlauf?'<span class="pill">Umlaufbewerb</span>':""}${b.status==="abgeschlossen"?'<span class="pill w">abgeschlossen</span>':""}</div></div>`};
+  return `<div class="flex"><h2 class="sp">Bewerbe</h2><button class="b" id="neuBewerb">+ Neuer Bewerb</button></div>
+  ${list.length?"":`<div class="card info">Noch keine Bewerbe angelegt. Lege mit „+ Neuer Bewerb“ den ersten an – z. B. einen Umlaufbewerb über mehrere Monate.</div>`}
+  ${aktiv.length?`<div class="grid">${aktiv.map(card).join("")}</div>`:""}
+  ${alt.length?`<h3>Abgeschlossen</h3><div class="grid">${alt.map(card).join("")}</div>`:""}`;
+}
+
+function vBewerb(){
+  const b=S.bewerbe[UI.bewerbId];
+  const tabs=[["wertung","Wertung"],["erfassung","Ergebnis erfassen"],["teilnehmer",`Teilnehmer (${(b.teilnehmer||[]).length})`],["antritte","Alle Antritte"],["einstellungen","Einstellungen"]];
+  let body="";
+  if(UI.tab==="wertung")body=vWertung(b);
+  else if(UI.tab==="erfassung")body=vErfassung(b);
+  else if(UI.tab==="teilnehmer")body=vTeilnehmer(b);
+  else if(UI.tab==="antritte")body=vAntritte(b);
+  else body=vBewerbForm(b);
+  return `<div class="flex"><button class="b g sm" id="zurueck">← Bewerbe</button></div>
+  <div class="flex" style="margin-top:8px"><h2 class="sp" style="margin:0">${esc(b.name)}</h2>
+  <span class="small muted">${fmtD(b.start)}${b.ende?" – "+fmtD(b.ende):""} · max. ${maxGesamt(b)} Ringe · ${esc(MODI[b.modus]?.replace("N",b.bestN||2)||"")}</span></div>
+  <div class="tabs">${tabs.map(([k,l])=>`<button data-tab="${k}" class="${UI.tab===k?"on":""}">${l}</button>`).join("")}</div>${body}`;
+}
+
+function vWertung(b){
+  const all=rangiere(auswertung(b));
+  const offen=ohneNamen(b).length;
+  const laufend=Object.values(S.ergebnisse).filter(r=>r.bewerbId===b.id&&!komplett(b,r)).length;
+  const offenHinweis=(laufend?`<div class="info">${laufend} Ergebnis${laufend===1?"":"se"} noch nicht vollständig (Durchgang läuft) – zählt erst nach der letzten Serie.</div>`:"")+(offen?`<div class="notice">${offen} Ergebnis${offen===1?"":"se"} noch ohne Namen – zählt erst nach der Zuordnung. <button class="b g sm" data-tab="antritte">Jetzt zuordnen</button></div>`:"");
+  if(!all.length)return offenHinweis+`<div class="card info">Noch keine gewerteten Ergebnisse. Unter „Ergebnis erfassen“ eintragen.</div>`;
+  const klassenVorh=KLASSEN_ORD.filter(k=>all.some(r=>r.klasse===k));
+  const filters=[["gesamt","Gesamt"],["w","Damen"],["m","Herren"],...(all.some(r=>r.geschlecht==="x")?[["x","Inter"]]:[]),...klassenVorh.map(k=>["k:"+k,KLASSEN[k]]),["klassen","Alle Klassen"]];
+  if(!filters.some(f=>f[0]===UI.filter))UI.filter="gesamt";
+  let html=offenHinweis+`<div class="chips">${filters.map(([k,l])=>`<button class="chip ${UI.filter===k?"on":""}" data-filter="${k}">${l}</button>`).join("")}</div>`;
+  const tbl=(rows,titel,hinweis)=>{
+    rows=rangiere(rows);
+    const multi=b.modus!=="best"&&b.modus!=="last";
+    return `<div class="card"><div class="flex"><h3 class="sp" style="margin:0">${esc(titel)}</h3><span class="small muted">${rows.length} Starter</span></div>${hinweis||""}
+    <div class="tw"><table><thead><tr><th>Rang</th><th>Name</th><th>Verein</th><th>Klasse</th><th class="n">Antritte</th>${multi?'<th class="n">Bestes</th>':""}<th class="n">Wertung</th><th class="n">X</th><th>Serien (gewertet)</th></tr></thead><tbody>
+    ${rows.map(r=>`<tr><td><span class="rank r${r.rang<=3?r.rang:""}">${r.rang}</span></td>
+      <td><b>${esc(sName(r.s))}</b>${r.unvollstaendig?' <span class="pill w" title="Noch nicht genug Antritte">offen</span>':""}</td>
+      <td>${esc(r.s?.verein||"")}</td><td><span class="pill">${KLASSEN[r.klasse]}</span></td>
+      <td class="n">${r.antritte}</td>${multi?`<td class="n">${num(r.bestes)}</td>`:""}
+      <td class="n"><b style="font-size:16px">${num(r.wert,b.modus==="avg")}</b></td>
+      <td class="n">${r.xs||0}</td>
+      <td class="ser-small">${(()=>{const best=b.modus==="last"?r.zaehlt[0]:[...r.zaehlt].sort((p,q)=>q.total-p.total||xSumme(q)-xSumme(p))[0];return (best.serien||[]).map((v,i)=>serAnzeige(v,(best.xs||[])[i])).join(" · ")})()}</td></tr>`).join("")}
+    </tbody></table></div></div>`};
+  const wertbar=rows=>{
+    const n=rows.filter(r=>!r.gast).length, v=new Set(rows.filter(r=>!r.gast).map(r=>(r.s?.verein||"").trim().toLowerCase())).size;
+    return (b.minHinweis!==false&&(n<5||v<2))?`<div class="notice">Laut FFWGK 2.1.1 nicht wertbar für Meistertitel: mind. 5 Startende aus mind. 2 Vereinen nötig (aktuell ${n} Startende, ${v} Verein${v===1?"":"e"}).</div>`:""};
+  const f=UI.filter;
+  if(f==="gesamt")html+=tbl(all,"Gesamtwertung");
+  else if(f==="w"||f==="m"||f==="x")html+=tbl(all.filter(r=>r.geschlecht===f&&!r.gast),f==="w"?"Damen – alle Klassen":f==="m"?"Herren – alle Klassen":"Inter");
+  else if(f==="klassen")klassenVorh.forEach(k=>{const r=all.filter(x=>x.klasse===k);html+=tbl(r,KLASSEN[k],k==="G"?"":wertbar(r))});
+  else {const k=f.slice(2);const r=all.filter(x=>x.klasse===k);html+=tbl(r,KLASSEN[k],k==="G"?"":wertbar(r))}
+  html+=`<div class="right"><button class="b" id="xlsxListe">📊 Ergebnisliste als Excel</button><button class="b g" id="csvWertung">CSV</button><button class="b g" id="txtWertung">Text kopieren</button></div>
+  <p class="small muted">Reihung bei Ringgleichheit: 1. mehr X (Innenzehner), 2. Summe der beiden letzten Serien (20-s-Serien), dann der beiden davor usw. (FFWGK 8.2.1).</p>`;
+  return html;
+}
+
+function vErfassung(b){
+  if(UI.editErg&&S.ergebnisse[UI.editErg])return vKomplett(b); // nur zum Bearbeiten eines fertigen Ergebnisses
+  return vDurchgang(b);
+}
+function komplett(b,r){const n=(b.serien||[]).length;return Array.isArray(r.serien)&&r.serien.length>=n&&r.serien.slice(0,n).every(v=>v!=null&&v!=="")}
+function summe(r){return Math.round((r.serien||[]).reduce((a,v)=>a+(v==null||v===""?0:Number(v)),0)*10)/10}
+function durchgaenge(b){
+  const g={};Object.values(S.ergebnisse).forEach(r=>{if(r.bewerbId===b.id&&r.dg)(g[r.dg]=g[r.dg]||[]).push(r)});
+  return Object.entries(g).map(([id,rows])=>{rows.sort((x,y)=>(Number(x.stand)||999)-(Number(y.stand)||999));
+    const start=rows.map(r=>r.erstellt||"").sort()[0]||"";
+    return {id,rows,start,datum:rows[0].datum,fertig:rows.every(r=>komplett(b,r))}})
+    .sort((x,y)=>x.start.localeCompare(y.start)).map((d,i)=>({...d,nr:i+1})).reverse(); // Nr. fortlaufend nach Startzeit
+}
+function dgTitel(b,nr){return `Durchgang ${nr} – ${esc(b.name)}`}
+function dgNr(b,id){const d=durchgaenge(b).find(x=>x.id===id);return d?d.nr:null
+}
+function naechsteSerie(b,rows){const n=(b.serien||[]).length;for(let i=0;i<n;i++)if(rows.some(r=>r.serien[i]==null||r.serien[i]===""))return i;return n-1}
+function uhr(iso){try{return new Date(iso).toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit"})}catch(e){return ""}}
+function vDurchgang(b){
+  const alle=durchgaenge(b);
+  const dg=UI.dg&&alle.find(d=>d.id===UI.dg);
+  if(!dg){
+    UI.dg=null;
+    const offen=alle.filter(d=>!d.fertig).sort((x,y)=>x.nr-y.nr),fertig=alle.filter(d=>d.fertig).sort((x,y)=>x.nr-y.nr);
+    return `<div class="card"><div class="flex"><h3 class="sp" style="margin:0">Neuer ${dgTitel(b,alle.length+1)}</h3><span class="pill">${alle.length} Durchgang${alle.length===1?"":"e"} bisher · ${fertig.length} abgeschlossen</span></div>
+    <p class="small muted">Alle Schützen eines Durchgangs schießen gleichzeitig. Nach jeder Serie werden die Ringe aller Stände eingetragen und gespeichert – dann folgt die nächste Serie.</p>
+    <div class="row"><div style="flex:2 1 220px"><label>Stände (z. B. 1-5 oder 1,2,4,7)</label><input id="dgStaende" value="${esc(b.letzteStaende||"1-5")}"></div>
+    <div><label>Datum</label><input type="date" id="dgDatum" value="${today()}"></div>
+    <div style="flex:0 0 auto"><button class="b" id="dgStart">Durchgang starten</button></div></div>
+    <p class="small muted">Die Namen ordnest du im Durchgang direkt je Stand zu – jederzeit, auch erst nach der letzten Serie.</p></div>
+    ${offen.length?`<div class="card"><h3 style="margin-top:0">Laufende Durchgänge</h3>${offen.map(d=>`<div class="flex" style="padding:8px 0;border-bottom:1px solid var(--line)"><div class="sp"><b>${dgTitel(b,d.nr)}</b> · ${fmtD(d.datum)} · ${uhr(d.start)} – Stände ${d.rows.map(r=>esc(r.stand||"?")).join(", ")}
+      <div class="small muted">nächste: ${esc((b.serien[naechsteSerie(b,d.rows)]||{}).label||"")} (Serie ${naechsteSerie(b,d.rows)+1} von ${b.serien.length})</div></div><button class="b sm" data-dgopen="${d.id}">Fortsetzen</button></div>`).join("")}</div>`:""}
+    ${fertig.length?`<div class="card"><h3 style="margin-top:0">Abgeschlossene Durchgänge (${fertig.length})</h3>${fertig.map(d=>`<div class="flex" style="padding:6px 0;border-bottom:1px solid var(--line)"><div class="sp small"><b>${dgTitel(b,d.nr)}</b> · ${fmtD(d.datum)} · ${uhr(d.start)} – ${d.rows.map(r=>`${esc(r.stand)}: ${r.sid&&S.schuetzen[r.sid]?esc(sName(S.schuetzen[r.sid])):"<i>ohne Namen</i>"} <b>${num(summe(r))}</b>`).join(" · ")}</div><button class="b g sm" data-dgopen="${d.id}">Öffnen</button></div>`).join("")}</div>`:""}`;
+  }
+  const n=b.serien.length;
+  let si=UI.dgSerie;if(si==null||si<0||si>=n)si=naechsteSerie(b,dg.rows);
+  UI.dgAktiv=si;
+  const step=b.zehntel?"0.1":"1",mx=maxSerie(b.serien[si]);
+  return `<div class="card">
+  <div class="flex"><button class="b g sm" id="dgBack">← Übersicht</button><h3 class="sp" style="margin:0">${dgTitel(b,dg.nr)} <span class="muted small" style="font-weight:400">· ${fmtD(dg.datum)} · ${uhr(dg.start)}</span></h3>${dg.fertig?'<span class="pill">vollständig ✓</span>':'<span class="pill w">läuft</span>'}</div>
+  <label style="margin-top:12px">Serie wählen</label>
+  <div class="chips">${b.serien.map((s,i)=>{const done=dg.rows.every(r=>r.serien[i]!=null&&r.serien[i]!=="");return `<button class="chip ${i===si?"on":""}" data-dgserie="${i}">${done?"✓ ":""}${esc(s.label)}</button>`}).join("")}</div>
+  <div class="flex" style="margin:6px 0 4px"><div class="total" style="font-size:24px">Serie ${si+1} von ${n}: ${esc(b.serien[si].label)}</div><span class="muted small">${b.serien[si].schuss||5} Schuss · je Schuss max. ${b.serien[si].maxRing||10} Ringe</span></div>
+  <div class="tw"><table><thead><tr><th>Stand</th><th>Name</th><th class="dg-bisher">Bisher</th><th>Schüsse ${esc(b.serien[si].label)}</th><th class="n">Summe</th><th></th></tr></thead><tbody>
+  ${dg.rows.map((r,ix)=>{const vorher=r.serien.slice(0,n).map((v,i)=>i===si?"□":serAnzeige(v,(r.xs||[])[i])).join(" ");
+    return `<tr><td style="font-size:20px;font-weight:700">${esc(r.stand||"–")}</td>
+    <td>${namensZelle(b,r)}</td>
+    <td class="ser-small dg-bisher">${vorher}</td>
+    <td><div class="flex" style="gap:4px;flex-wrap:nowrap">${(()=>{const sch=Number(b.serien[si].schuss)||5;const alt=String((r.schuss||[])[si]||"").split(",");
+      return Array.from({length:sch},(_,k)=>`<input type="text" autocomplete="off" class="shot" id="sh_${r.id}_${si}_${k}" data-rid="${r.id}" data-k="${k}" inputmode="numeric" maxlength="3" value="${esc(alt[k]||"")}" style="text-align:center;font-size:19px;padding:8px 2px;width:46px">`).join("")})()}
+      <button class="b g" data-rowx="${r.id}" tabindex="-1" title="X (Innenzehner) in das aktuelle bzw. nächste freie Feld" style="padding:8px 12px;margin-left:4px">x</button></div>
+      ${r.serien[si]!=null&&r.serien[si]!==""&&!(r.schuss||[])[si]?`<div class="small muted">gespeichert: ${serAnzeige(r.serien[si],(r.xs||[])[si])} (ohne Einzelschüsse)</div>`:""}</td>
+    <td class="n"><b id="dgsum_${r.id}">${num(summe(r))}</b><div class="small" style="color:var(--acc)" id="dgx_${r.id}">${xSumme(r)?xSumme(r)+"x":""}</div></td>
+    <td class="n">${r.serien.every(v=>v==null||v==="")?`<button class="b d sm" data-dgdel="${r.id}" title="Stand aus dem Durchgang entfernen">×</button>`:""}</td></tr>`}).join("")}
+  </tbody></table></div>
+  <div id="dgWarn"></div><div id="dgWarnName"></div>
+  <div class="flex" style="margin-top:12px"><div class="flex sp"><input id="dgAddStand" type="number" min="1" placeholder="Stand Nr." style="width:110px"><button class="b g sm" id="dgAdd">+ Stand hinzufügen</button></div>
+  <button class="b" id="dgSave" style="font-size:16px;padding:10px 20px">Serie ${si+1} speichern${si<n-1?" → weiter":""}</button></div>
+  <p class="small muted">Eingabe je Schuss: 0–10 oder x (Innenzehner = 10 Ringe). Werte über 10 werden als Warnung markiert und nicht gespeichert. Mit Enter oder Tab geht es ins nächste Feld. Gespeichert wird erst mit „Serie … speichern“. Leere Felder bleiben offen und können später nachgetragen werden. Bereits gespeicherte Serien lassen sich über „Serie wählen“ korrigieren.</p>
+  </div>`;
+}
+function vKomplett(b){
+  const tn=(b.teilnehmer||[]).map(t=>S.schuetzen[t.sid]).filter(Boolean).sort((x,y)=>sName(x).localeCompare(sName(y)));
+  const edit=UI.editErg&&S.ergebnisse[UI.editErg];
+  const offen=ohneNamen(b);
+  const sid=UI.erfassSid&&teilnahme(b,UI.erfassSid)?UI.erfassSid:"";
+  const vorh=sid?Object.values(S.ergebnisse).filter(r=>r.bewerbId===b.id&&r.sid===sid):[];
+  const maxA=Number(b.maxAntritte)||0;
+  const voll=!edit&&maxA&&vorh.length>=maxA;
+  const step=b.zehntel?"0.1":"1";
+  const standWert=edit?(edit.stand||""):(UI.erfassStand||"");
+  return `<div class="card">
+  <h3 style="margin-top:0">${edit?"Ergebnis bearbeiten":"Neues Ergebnis"}</h3>
+  <div class="row">
+    <div style="flex:0 0 110px"><label>Stand Nr.</label><input type="number" min="1" inputmode="numeric" id="eStand" value="${esc(standWert)}" placeholder="–"></div>
+    <div style="flex:2 1 240px"><label>Schütze/Schützin</label>
+      <select id="eSid"><option value="">– später zuordnen –</option>${tn.map(s=>`<option value="${s.id}" ${s.id===sid?"selected":""}>${esc(sName(s))}${s.verein?" ("+esc(s.verein)+")":""}</option>`).join("")}</select></div>
+    <div><label>Datum</label><input type="date" id="eDatum" value="${edit?edit.datum:today()}"></div>
+    <div style="flex:0 0 auto"><button class="b g" id="schnellNeu" title="Neuen Teilnehmer sofort anlegen">+ Neuer Teilnehmer</button></div>
+  </div>
+  ${sid?`<p class="small muted">Klasse: <b>${KLASSEN[klasseVon(b,sid)]}</b> · bisherige Antritte: ${vorh.length}${maxA?" / "+maxA:""}${vorh.length?" · bisher bestes: "+num(Math.max(...vorh.map(r=>r.total))):""}</p>`:""}
+  ${voll?`<div class="notice">Maximale Anzahl an Antritten (${maxA}) erreicht.</div>`:""}
+  <h3>Serien</h3>
+  <div class="series">${(b.serien||[]).map((se,i)=>`<div><label style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(se.label)}</label>
+    <div class="flex" style="gap:4px;flex-wrap:nowrap"><input type="text" autocomplete="off" placeholder="max ${maxSerie(se)}" inputmode="decimal" class="ser" id="ser${i}" data-i="${i}" value="${edit?esc(serText(edit.serien[i],(edit.xs||[])[i])):""}" style="min-width:0"><button class="b g sm xbtn" data-addx="ser${i}" tabindex="-1" title="X (Innenzehner) hinzufügen">x</button></div></div>`).join("")}</div>
+  <div class="flex" style="margin-top:14px"><div class="sp"><div class="small muted">Gesamt</div><div class="total" id="eTotal">0</div><div class="small muted" id="eX"></div></div>
+  <div style="flex:2 1 220px"><label>Notiz (optional)</label><input id="eNotiz" value="${esc(edit?edit.notiz:"")}"></div></div>
+  <div class="right">${edit?`<button class="b g" id="eAbbr">Abbrechen</button>`:""}<button class="b" id="eSave" ${voll?"disabled":""}>${edit?"Änderung speichern":"Speichern"}</button></div>
+  <p class="small muted">Eingabe je Serie: Summe (47), Summe mit X (47xx) oder Einzelschüsse (x 10 9 9 8) – die x-Taste hängt ein X an. Serien mit Enter durchtippen – nach der letzten Serie wird gespeichert. Den Namen musst du nicht sofort wählen: Ergebnisse ohne Namen kannst du unten (oder unter „Alle Antritte“) nachträglich zuordnen.</p>
+  </div>
+  ${offen.length?`<div class="card" style="border-color:var(--warn)"><div class="flex"><h3 class="sp" style="margin:0">Ohne Namen (${offen.length})</h3>
+</div>
+  <p class="small muted">Diese Ergebnisse zählen erst in der Wertung, wenn ein Name zugeordnet ist.</p>${tblAntritte(b,offen)}</div>`:""}
+  ${sid&&vorh.length?`<div class="card"><h3 style="margin-top:0">Antritte von ${esc(sName(S.schuetzen[sid]))}</h3>${tblAntritte(b,vorh)}</div>`:""}`;
+}
+
+function ohneNamen(b){return Object.values(S.ergebnisse).filter(r=>r.bewerbId===b.id&&!(r.sid&&S.schuetzen[r.sid]))}
+function namensZelle(b,r){
+  const hat=r.sid&&S.schuetzen[r.sid];
+  if(hat&&UI.nameEdit!==r.id)return `<b>${esc(sName(S.schuetzen[r.sid]))}</b> <button class="b g sm" data-namechg="${r.id}" title="Namen ändern">ändern</button>`;
+  return namensAuswahl(b,r)+(hat?` <button class="b g sm" data-namecancel="1">Abbrechen</button><div class="small muted">bisher: ${esc(sName(S.schuetzen[r.sid]))}</div>`:"");
+}
+function namensAuswahl(b,r){
+  const tnIds=new Set((b.teilnehmer||[]).map(t=>t.sid));
+  const tn=[...tnIds].map(id=>S.schuetzen[id]).filter(Boolean).sort((x,y)=>sName(x).localeCompare(sName(y)));
+  const rest=Object.values(S.schuetzen).filter(s=>!tnIds.has(s.id)).sort((x,y)=>sName(x).localeCompare(sName(y)));
+  return `<select data-assign="${r.id}" style="min-width:190px;border-color:var(--warn)"><option value="">– Namen zuordnen –</option>
+  ${tn.length?`<optgroup label="Gemeldete Teilnehmer">${tn.map(s=>`<option value="${s.id}">${esc(sName(s))}</option>`).join("")}</optgroup>`:""}
+  ${rest.length?`<optgroup label="Weitere Personen (werden gemeldet)">${rest.map(s=>`<option value="${s.id}">${esc(sName(s))}</option>`).join("")}</optgroup>`:""}
+  <option value="__neu">+ Neue Person anlegen …</option>${r.sid?`<option value="__weg">– Zuordnung entfernen –</option>`:""}</select>`;
+}
+function zuordnen(bid,rid,sid){
+  const r=S.ergebnisse[rid];if(!r||!sid)return;
+  put("ergebnisse",{...r,sid});
+  let cur=S.bewerbe[bid];
+  if(!teilnahme(cur,sid))cur={...cur,teilnehmer:[...(cur.teilnehmer||[]),{sid,klasse:"",gast:false,gemeldet:r.datum||today()}]};
+  if(cur!==S.bewerbe[bid])put("bewerbe",cur);
+  toast(`${r.stand?"Stand "+r.stand:"Ergebnis "+num(r.total)} → ${sName(S.schuetzen[sid])}`);
+}
+function tblAntritte(b,list){
+  list=[...list].sort((x,y)=>(y.datum||"").localeCompare(x.datum||"")||(y.erstellt||"").localeCompare(x.erstellt||""));
+  return `<div class="tw"><table><thead><tr><th>Datum</th><th>Durchgang</th><th>Stand</th><th>Name</th><th>Serien</th><th class="n">Gesamt</th><th>Notiz</th><th></th></tr></thead><tbody>
+  ${list.map(r=>`<tr><td>${fmtD(r.datum)}</td><td>${r.dg?(dgNr(b,r.dg)||"–"):"–"}</td><td>${esc(r.stand||"–")}</td><td>${namensZelle(b,r)}</td><td class="ser-small">${(r.serien||[]).map((v,i)=>serAnzeige(v,(r.xs||[])[i])).join(" · ")}</td>
+  <td class="n"><b>${num(summe(r))}</b>${xSumme(r)?` <span class="small" style="color:var(--acc)">${xSumme(r)}x</span>`:""}${komplett(b,r)?"":`<div><span class="pill w">läuft ${r.serien.filter(v=>v!=null&&v!=="").length}/${b.serien.length}</span></div>`}</td><td class="small">${esc(r.notiz||"")}</td>
+  <td class="n" style="white-space:nowrap"><button class="b g sm" data-editerg="${r.id}">Bearbeiten</button> <button class="b d sm" data-delerg="${r.id}">Löschen</button></td></tr>`).join("")}
+  </tbody></table></div>`;
+}
+
+function vAntritte(b){
+  const list=Object.values(S.ergebnisse).filter(r=>r.bewerbId===b.id);
+  if(!list.length)return `<div class="card info">Noch keine Antritte.</div>`;
+  return `<div class="card">${tblAntritte(b,list)}</div><div class="right"><button class="b g" id="csvAntritte">Antritte als CSV</button></div>`;
+}
+
+function vTeilnehmer(b){
+  const tn=(b.teilnehmer||[]).map(t=>({t,s:S.schuetzen[t.sid]})).filter(x=>x.s).sort((x,y)=>sName(x.s).localeCompare(sName(y.s)));
+  const q=UI.suche.toLowerCase();
+  const frei=Object.values(S.schuetzen).filter(s=>!teilnahme(b,s.id)&&(!q||sName(s).toLowerCase().includes(q)||(s.verein||"").toLowerCase().includes(q))).sort((x,y)=>sName(x).localeCompare(sName(y)));
+  return `<div class="card"><div class="flex"><h3 class="sp" style="margin:0">Teilnehmer hinzufügen</h3><button class="b" id="tnNeu">+ Neue Person anlegen &amp; melden</button></div>
+  <p class="small muted">Teilnehmer können jederzeit – auch während eines laufenden Bewerbs – nachgemeldet werden.</p>
+  <input id="tnSuche" placeholder="Aus der Schützenliste suchen …" value="${esc(UI.suche)}">
+  ${frei.length?`<div class="list-pick" style="margin-top:6px">${frei.slice(0,60).map(s=>`<div data-addtn="${s.id}">${esc(sName(s))} <span class="muted small">${esc(s.verein||"")} · Jg. ${esc(s.geburtsjahr||"?")} · ${s.geschlecht==="w"?"w":s.geschlecht==="x"?"Inter":"m"}</span> <span class="pill" style="float:right">+ melden</span></div>`).join("")}</div>`:`<p class="small muted">${Object.keys(S.schuetzen).length?"Keine weiteren Personen gefunden.":"Die Schützenliste ist noch leer."}</p>`}
+  </div>
+  <div class="card"><h3 style="margin-top:0">Gemeldet (${tn.length})</h3>
+  ${tn.length?`<div class="tw"><table><thead><tr><th>Name</th><th>Verein</th><th>Jg.</th><th>Automatische Klasse</th><th>Startet in Klasse</th><th>Gast</th><th>Gemeldet</th><th></th></tr></thead><tbody>
+  ${tn.map(({t,s})=>`<tr><td><b>${esc(sName(s))}</b></td><td>${esc(s.verein||"")}</td><td>${esc(s.geburtsjahr||"")}</td>
+  <td><span class="pill">${KLASSEN[klasseVon(b,s.id)]}</span></td>
+  <td><select data-klasse="${s.id}" style="min-width:140px"><option value="">automatisch</option>${KLASSEN_ORD.filter(k=>k!=="G").map(k=>`<option value="${k}" ${t.klasse===k?"selected":""}>${KLASSEN[k]}</option>`).join("")}</select></td>
+  <td><input type="checkbox" data-gast="${s.id}" ${t.gast?"checked":""} style="width:auto"></td>
+  <td class="small">${fmtD(t.gemeldet)}</td>
+  <td><button class="b d sm" data-deltn="${s.id}">Entfernen</button></td></tr>`).join("")}</tbody></table></div>`:`<p class="muted">Noch niemand gemeldet.</p>`}
+  <p class="small muted">„Startet in Klasse“: z. B. Senioren 2 auf eigenen Wunsch in Senioren 1 (FFWGK 2.1.7). Gäste werden in einer eigenen Klasse geführt (2.1.6).</p></div>`;
+}
+
+function vBewerbForm(b){
+  const n=!b;b=b||{name:"",programm:"3030voll",start:today(),ende:"",modus:"sum",bestN:2,maxAntritte:"",umlauf:false,zehntel:false,interFallback:true,minHinweis:true,s4:true,status:"offen",serien:PROGRAMME["3030voll"].serien,jahr:""};
+  const ser=b.serien||[];
+  return `<div class="card"><h3 style="margin-top:0">${n?"Neuer Bewerb":"Einstellungen"}</h3>
+  <div class="row"><div style="flex:2 1 300px"><label>Name des Bewerbs</label><input id="fName" value="${esc(b.name)}" placeholder="z. B. KSV Herbst-Umlaufbewerb 2026"></div>
+  <div><label>Status</label><select id="fStatus"><option value="offen" ${b.status!=="abgeschlossen"?"selected":""}>offen</option><option value="abgeschlossen" ${b.status==="abgeschlossen"?"selected":""}>abgeschlossen</option></select></div></div>
+  <div class="row" style="margin-top:10px"><div><label>Beginn</label><input type="date" id="fStart" value="${esc(b.start)}"></div>
+  <div><label>Ende (bei Umlaufbewerb)</label><input type="date" id="fEnde" value="${esc(b.ende||"")}"></div>
+  <div><label>Jahr des Bewerbs</label><input type="number" id="fJahr" value="${esc(b.jahr||"")}" placeholder="Jahr des Beginns"></div></div>
+  <div class="row" style="margin-top:10px"><div style="flex:2 1 300px"><label>Programm</label><select id="fProg">${Object.entries(PROGRAMME).map(([k,p])=>`<option value="${k}" ${b.programm===k?"selected":""}>${p.name}</option>`).join("")}</select></div>
+</div>
+  <div id="freiBox" style="${b.programm==="frei"?"":"display:none"}"><h3>Serien (freies Programm)</h3>
+    <div class="row"><div><label>Anzahl Serien</label><input type="number" id="fAnz" min="1" max="40" value="${ser.length||4}"></div>
+    <div><label>Schuss je Serie</label><input type="number" id="fSchuss" min="1" value="${ser[0]?.schuss||5}"></div>
+    <div><label>Max. Ring je Schuss</label><input type="number" id="fMaxRing" min="1" value="${ser[0]?.maxRing||10}"></div>
+    <div><label>Bezeichnung</label><input id="fLabel" value="${esc((ser[0]?.label||"Serie 1").replace(/\s*\d+$/,""))}"></div></div></div>
+  <h3>Umlauf / Wertungsmodus</h3>
+  <div class="row"><div style="flex:2 1 280px"><label>Was zählt bei mehreren Antritten?</label><select id="fModus">${["sum","avg"].map(k=>`<option value="${k}" ${b.modus===k?"selected":""}>${MODI[k]}</option>`).join("")}</select></div>
+  <div><label>Max. Antritte je Person</label><input type="number" id="fMaxA" min="0" value="${esc(b.maxAntritte||"")}" placeholder="unbegrenzt"></div></div>
+  <h3>Ergebnisliste (Druck &amp; Excel)</h3>
+  <div class="row"><div><label>Kategorie / Tabellenkopf</label><input id="fKat" value="${esc(b.kategorie||"")}" placeholder="z. B. Großkaliber"></div>
+  <div><label>Bewerbsleiter (Autor)</label><input id="fLeiter" value="${esc(b.leiter||"")}"></div>
+  <div><label>Schützenmeister</label><input id="fSM" value="${esc(b.schuetzenmeister||"")}"></div></div>
+  <div class="row" style="margin-top:10px"><div><label>Wettkampfleiterteam (durch Beistrich getrennt)</label><input id="fTeam" value="${esc(b.team||"")}"></div></div>
+  <div class="row" style="margin-top:10px"><div><label>Beschreibung für Seite 1 – „# Überschrift“, „- Punkt“, „-- Unterpunkt“</label><textarea id="fBeschr" rows="7" placeholder="# Ziel&#10;-- Selbst kreierte Scheibe mit Wendeanlage&#10;# Waffen&#10;- Waffenart&#10;-- Alle Großkaliber-Kurzwaffen">${esc(b.beschreibung||"")}</textarea></div></div>
+  <label class="flex" style="color:var(--ink);font-size:14px;margin-top:6px"><input type="checkbox" id="fWaffG" style="width:auto" ${b.waffg!==false?"checked":""}> Hinweis zur waffenrechtlichen Relevanz (§ 5 Abs. 2, 2. WaffV) drucken</label>
+  <h3>Klasseneinteilung (FFWGK-Regeln, 15. Ausgabe)</h3>
+  <label class="flex" style="color:var(--ink);font-size:14px"><input type="checkbox" id="fInter" style="width:auto" ${b.interFallback!==false?"checked":""}> Inter unter 5 Startenden in die Männer-Altersklasse einordnen (2.1.1)</label>
+  <label class="flex" style="color:var(--ink);font-size:14px"><input type="checkbox" id="fS4" style="width:auto" ${b.s4!==false?"checked":""}> Senioren/Seniorinnen 4 (ab 77) als eigene Klasse führen</label>
+  <label class="flex" style="color:var(--ink);font-size:14px"><input type="checkbox" id="fMin" style="width:auto" ${b.minHinweis!==false?"checked":""}> Hinweis anzeigen, wenn eine Klasse unter 5 Startenden / 2 Vereinen liegt</label>
+  <div class="right">${n?`<button class="b g" id="fAbbr">Abbrechen</button>`:`<button class="b d" id="fDel">Bewerb löschen</button>`}<button class="b" id="fSave">${n?"Bewerb anlegen":"Speichern"}</button></div></div>`;
+}
+
+function vSchuetzen(){
+  const q=UI.suche.toLowerCase();
+  const list=Object.values(S.schuetzen).filter(s=>!q||sName(s).toLowerCase().includes(q)||(s.verein||"").toLowerCase().includes(q)).sort((x,y)=>sName(x).localeCompare(sName(y)));
+  const jahr=new Date().getFullYear();
+  return `<div class="flex"><h2 class="sp">Schützen</h2><button class="b" id="sNeu">+ Neue Person</button></div>
+  <div class="card"><input id="sSuche" placeholder="Suchen nach Name oder Verein …" value="${esc(UI.suche)}">
+  ${list.length?`<div class="tw" style="margin-top:8px"><table><thead><tr><th>Name</th><th>Verein</th><th>Jg.</th><th>Geschlecht</th><th>Klasse ${jahr}</th><th class="n">Bewerbe</th></tr></thead><tbody>
+  ${list.map(s=>`<tr class="click" data-editsch="${s.id}"><td><b>${esc(sName(s))}</b></td><td>${esc(s.verein||"")}</td><td>${esc(s.geburtsjahr||"")}</td>
+  <td>${s.geschlecht==="w"?"weiblich":s.geschlecht==="x"?"inter":"männlich"}</td><td><span class="pill">${KLASSEN[s.geschlecht==="x"?"I":altersKlasse(s,{jahr})]}</span></td>
+  <td class="n">${Object.values(S.bewerbe).filter(b=>teilnahme(b,s.id)).length}</td></tr>`).join("")}</tbody></table></div>`:`<p class="muted">Keine Personen.</p>`}</div>`;
+}
+
+function vDaten(){
+  const n=COLLS.map(k=>Object.keys(S[k]).length);
+  return `<h2>Daten &amp; Sicherung</h2>
+  <div class="card"><p>Speicherort: <b>${backend==="db"?"Cloud (geteilt zwischen allen Geräten, die diese Seite öffnen)":"Nur dieser Browser (lokal)"}</b></p>
+  <p class="small muted">${n[0]} Bewerbe · ${n[1]} Personen · ${n[2]} Ergebnisse</p>
+  ${backend==="db"&&localHasData()?`<div class="info">In diesem Browser liegen noch lokal gespeicherte Daten. <button class="b sm" id="migr">In die Cloud übernehmen</button></div>`:""}
+  ${window.matchMedia&&matchMedia("(display-mode: standalone)").matches||navigator.standalone?`<div class="info">Offline-App (Version ${APP_VERSION}) – alle Daten liegen nur auf diesem Gerät. Bitte nach jedem Schießtag eine Sicherung erstellen.</div>`:""}
+  <h3>Sicherung exportieren</h3>
+  <p class="small muted">Für Bewerbe über mehrere Monate empfiehlt sich regelmäßig eine Sicherungsdatei (JSON).</p>
+  <div class="flex"><button class="b" id="expJson">Sicherung herunterladen</button><button class="b g" id="cpJson">Sicherung in Zwischenablage</button></div>
+  <h3>Sicherung importieren</h3>
+  <p class="small muted">Datensätze mit gleicher ID werden überschrieben, alle anderen bleiben erhalten.</p>
+  <input type="file" id="impFile" accept=".json,application/json" style="max-width:360px">
+  <h3>Personen per CSV importieren</h3>
+  <p class="small muted">Spalten: Nachname;Vorname;Geburtsjahr;Geschlecht (m/w/x);Verein – eine Person pro Zeile.</p>
+  <textarea id="csvP" rows="4" placeholder="Muster;Max;1972;m;KSV Siemens"></textarea>
+  <div class="right"><button class="b" id="csvPImp">Personen importieren</button></div></div>
+  <div class="card small muted"><b>Altersklassen nach FFWGK-Regeln (15. Ausgabe, 01.01.2025), Abschnitt 2.1:</b> maßgeblich ist das im jeweiligen Kalenderjahr erreichte Alter.
+  Frauen/Männer bis 49 · Seniorinnen/Senioren 1: 50–59 · 2: 60–69 · 3: ab 70 · 4: ab 77 (in der App 3 = 70–76, wenn Klasse 4 aktiv) · Inter: Geschlecht weder weiblich noch männlich · Gäste laut Ausschreibung.</div>`;
+}
+
+/* ================= Dialoge ================= */
+function modal(html,onBind){$("#modalroot").innerHTML=`<div class="modal"><div class="card">${html}</div></div>`;
+  const m=$("#modalroot .modal");m.addEventListener("mousedown",e=>{if(e.target===m)closeModal()});onBind&&onBind();}
+function closeModal(){$("#modalroot").innerHTML=""}
+function schuetzeDialog(s,onSaved){
+  const n=!s;s=s||{vorname:"",nachname:"",geburtsjahr:"",geschlecht:"m",verein:"KSV Siemens",notiz:""};
+  modal(`<h3 style="margin-top:0">${n?"Neue Person":"Person bearbeiten"}</h3>
+  <div class="row"><div><label>Vorname</label><input id="dVor" value="${esc(s.vorname)}"></div><div><label>Nachname</label><input id="dNach" value="${esc(s.nachname)}"></div></div>
+  <div class="row" style="margin-top:10px"><div><label>Geburtsjahr</label><input type="number" id="dJg" value="${esc(s.geburtsjahr)}" placeholder="z. B. 1975"></div>
+  <div><label>Geschlecht</label><select id="dG"><option value="m" ${s.geschlecht==="m"?"selected":""}>männlich</option><option value="w" ${s.geschlecht==="w"?"selected":""}>weiblich</option><option value="x" ${s.geschlecht==="x"?"selected":""}>inter / divers</option></select></div></div>
+  <div class="row" style="margin-top:10px"><div><label>Verein</label><input id="dVer" value="${esc(s.verein)}"></div></div>
+  <div class="row" style="margin-top:10px"><div><label>Notiz</label><input id="dNot" value="${esc(s.notiz||"")}"></div></div>
+  <div class="right">${!n?`<button class="b d" id="dDel">Löschen</button>`:""}<button class="b g" id="dAbbr">Abbrechen</button><button class="b" id="dOk">Speichern</button></div>`,()=>{
+    $("#dVor").focus();
+    $("#dAbbr").onclick=closeModal;
+    if($("#dDel"))$("#dDel").onclick=()=>{
+      const hat=Object.values(S.ergebnisse).some(r=>r.sid===s.id);
+      if(hat){toast("Person hat Ergebnisse – zuerst Ergebnisse löschen.");return}
+      Object.values(S.bewerbe).forEach(b=>{if(teilnahme(b,s.id))put("bewerbe",{...b,teilnehmer:b.teilnehmer.filter(t=>t.sid!==s.id)})});
+      del("schuetzen",s.id);closeModal();};
+    $("#dOk").onclick=()=>{
+      const o={...s,id:s.id||uid(),vorname:$("#dVor").value.trim(),nachname:$("#dNach").value.trim(),geburtsjahr:$("#dJg").value.trim(),geschlecht:$("#dG").value,verein:$("#dVer").value.trim(),notiz:$("#dNot").value.trim()};
+      if(!o.nachname&&!o.vorname){toast("Bitte einen Namen eingeben.");return}
+      const jg=Number(o.geburtsjahr);if(o.geburtsjahr&&(jg<1900||jg>new Date().getFullYear())){toast("Geburtsjahr prüfen.");return}
+      if(n){const dup=Object.values(S.schuetzen).find(x=>sName(x).toLowerCase()===sName(o).toLowerCase()&&String(x.geburtsjahr)===String(o.geburtsjahr));
+        if(dup&&!$("#dOk").dataset.sure){$("#dOk").dataset.sure=1;$("#dOk").textContent="Trotzdem anlegen";toast("Diese Person gibt es bereits.");return}}
+      put("schuetzen",o);closeModal();onSaved&&onSaved(o);};
+    $("#modalroot").querySelectorAll("input").forEach(i=>i.addEventListener("keydown",e=>{if(e.key==="Enter")$("#dOk").click()}));
+  });
+}
+function bestaetigen(text,ok,label,cls){modal(`<p>${text}</p><div class="right"><button class="b g" id="cNo">Abbrechen</button><button class="b ${cls||"d"}" id="cYes">${label||"Ja, löschen"}</button></div>`,()=>{$("#cNo").onclick=closeModal;$("#cYes").onclick=()=>{closeModal();ok()}})}
+function melde(b,sid){
+  if(teilnahme(b,sid))return;
+  put("bewerbe",{...b,teilnehmer:[...(b.teilnehmer||[]),{sid,klasse:"",gast:false,gemeldet:today()}]});
+}
+
+/* ================= Export ================= */
+const IST_IOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+async function anbieten(filename,text,mime){
+  const blob=text instanceof Blob?text:new Blob([text],{type:mime});
+  if(downloads){try{await downloads.save({filename,data:blob});return}catch(e){if(e&&e.code==="declined")return}}
+  if(IST_IOS&&navigator.canShare){ // iPad/iPhone: Teilen-Menü (In Dateien sichern, AirDrop, Mail …)
+    try{const f=new File([blob],filename,{type:mime||blob.type});if(navigator.canShare({files:[f]})){await navigator.share({files:[f],title:filename});return}}
+    catch(e){if(e&&e.name==="AbortError")return}}
+  try{const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=filename;document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href),60000);toast("Datei „"+filename+"“ wird gespeichert.");return}catch(e){}
+  if(typeof text==="string")kopieren(text,"Download nicht möglich – Inhalt wurde in die Zwischenablage kopiert.");else toast("Download nicht möglich.");
+}
+async function kopieren(text,msg){try{await navigator.clipboard.writeText(text);toast(msg||"In die Zwischenablage kopiert.")}catch(e){
+  modal(`<h3 style="margin-top:0">Zum Kopieren markieren</h3><textarea rows="12" id="cpT">${esc(text)}</textarea><div class="right"><button class="b" id="cpX">Schließen</button></div>`,()=>{$("#cpT").select();$("#cpX").onclick=closeModal})}}
+const csvCell=v=>{v=String(v??"");return /[;"\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+function wertungCSV(b){
+  const rows=rangiere(auswertung(b));
+  const head=["Rang","Nachname","Vorname","Verein","Jahrgang","Geschlecht","Klasse","Antritte","Wertung","X",...(b.serien||[]).map(s=>s.label)];
+  const lines=[head.join(";")];
+  rows.forEach(r=>lines.push([r.rang,r.s?.nachname,r.s?.vorname,r.s?.verein,r.s?.geburtsjahr,r.geschlecht,KLASSEN[r.klasse],r.antritte,num(r.wert,b.modus==="avg"),r.xs||0,...(r.tb||[]).map(v=>num(v))].map(csvCell).join(";")));
+  return "﻿"+lines.join("\r\n");
+}
+function wertungText(b){
+  const all=rangiere(auswertung(b));let t=`${b.name}\n${fmtD(b.start)}${b.ende?" – "+fmtD(b.ende):""}\n`;
+  const block=(titel,rows)=>{rows=rangiere(rows);if(!rows.length)return;t+=`\n${titel}\n`;rows.forEach(r=>t+=`${String(r.rang).padStart(3)}. ${sName(r.s)}${r.s?.verein?" ("+r.s.verein+")":""} – ${num(r.wert,b.modus==="avg")}${r.xs?" ("+r.xs+"x)":""}\n`)};
+  block("GESAMT",all);
+  KLASSEN_ORD.forEach(k=>block(KLASSEN[k].toUpperCase(),all.filter(r=>r.klasse===k)));
+  return t;
+}
+
+/* ================= Ergebnisliste (Druck / Excel) ================= */
+const VEREIN={name:"KSV-Siemens Sportschützen",adresse:"Wielandweg 25, 1220 Wien",web:"https://ksvsiemens.at/sportschuetzen",logo:"data:image/jpeg;base64,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"};
+function trefferZaehlen(b,r){ // aus den Einzelschüssen; null wenn nicht für alle Serien vorhanden
+  const n=(b.serien||[]).length,c={X:0,10:0,9:0,8:0,7:0,6:0,5:0,"1-4":0,F:0};
+  for(let i=0;i<n;i++){const t=(r.schuss||[])[i];if(!t)return null;
+    t.split(",").forEach(s=>{s=s.trim().toLowerCase();if(s==="x")c.X++;else{const v=Number(s);if(v===0)c.F++;else if(v>=5)c[v]++;else c["1-4"]++}})}
+  return c;
+}
+function listeDaten(b){
+  const rows=rangiere(auswertung(b));
+  const maxDG=Math.max(1,...rows.map(r=>r.antritte));
+  const chrono=sid=>Object.values(S.ergebnisse).filter(r=>r.bewerbId===b.id&&r.sid===sid&&komplett(b,r)).sort((x,y)=>(x.datum||"").localeCompare(y.datum||"")||(x.erstellt||"").localeCompare(y.erstellt||""));
+  const note=(a,o)=>a.xs!==o.xs?(a.xs>o.xs?"Mehr X":"Weniger X"):(()=>{const c=tiebreakCmp(a.tb,o.tb);return c<0?"Bessere Schlussserien":c>0?"Schwächere Schlussserien":"Gleichstand"})();
+  rows.forEach((r,i)=>{
+    r.dgs=chrono(r.sid);
+    let bi=0;r.dgs.forEach((e,k)=>{const be=r.dgs[bi];if(e.total>be.total||(e.total===be.total&&xSumme(e)>xSumme(be)))bi=k});r.bestIdx=bi;
+    const anm=[];const pre=r.dgs.length>1?`DG${bi+1}: `:"";
+    const prev=rows[i-1],next=rows[i+1];
+    if(prev&&prev.wert===r.wert)anm.push(pre+note(r,prev));else if(next&&next.wert===r.wert)anm.push(pre+note(r,next));
+    r.dgs.forEach((e,k)=>{if(e.notiz)anm.push((r.dgs.length>1?`DG${k+1}: `:"")+e.notiz)});
+    r.anm=anm.join("; ");
+  });
+  const details=[];
+  rows.forEach(r=>r.dgs.forEach((e,k)=>details.push({name:sName(r.s),dg:k+1,c:trefferZaehlen(b,e),total:e.total,xs:xSumme(e),notiz:e.notiz||""})));
+  details.sort((x,y)=>y.total-x.total||y.xs-x.xs||x.name.localeCompare(y.name));
+  const daten=[...new Set(Object.values(S.ergebnisse).filter(r=>r.bewerbId===b.id&&komplett(b,r)).map(r=>r.datum).filter(Boolean))].sort();
+  const klassen=KLASSEN_ORD.filter(k=>rows.some(r=>r.klasse===k)).map(k=>({k,rows:rangiere(rows.filter(r=>r.klasse===k))}));
+  const anzDG=durchgaenge(b).filter(d=>d.fertig).length;
+  return {rows,maxDG,details,daten,klassen,anzDG};
+}
+function datumText(d){if(!d.length)return "";if(d.length===1)return "am "+fmtD(d[0]);if(d.length===2)return `am ${fmtD(d[0])} und am ${fmtD(d[1])}`;
+  if(d.length<=4)return "am "+d.slice(0,-1).map(fmtD).join(", ")+" und am "+fmtD(d[d.length-1]);return `von ${fmtD(d[0])} bis ${fmtD(d[d.length-1])} (${d.length} Termine)`}
+function wertKopf(b){return b.modus==="avg"?"Durch-schnitt":b.modus==="sum"?"Summe":b.modus==="bestN"?"Summe beste "+(b.bestN||2):b.modus==="last"?"Letztes Ergebnis":"Bestes Ergebnis"}
+function beschreibungHTML(t){const out=[];let ul=0;
+  String(t||"").split(/\r?\n/).forEach(l=>{const s=l.trim();if(!s)return;
+    if(s.startsWith("# "))out.push(`<h2 class="sec">${esc(s.slice(2))}</h2>`);
+    else if(s.startsWith("-- "))out.push(`<div class="li2">${esc(s.slice(3))}</div>`);
+    else if(s.startsWith("- "))out.push(`<div class="li1">${esc(s.slice(2))}</div>`);
+    else out.push(`<p>${esc(s)}</p>`)});return out.join("")}
+function druckHTML(b){
+  const L=listeDaten(b),se=b.serien||[],sch=se.reduce((a,s)=>a+(Number(s.schuss)||5),0);
+  const heute=fmtD(today()),autor=b.leiter||"";
+  const dgCols=Array.from({length:L.maxDG},(_,i)=>`<th>${i+1}. DG</th>`).join("");
+  const kat=b.kategorie||(PROGRAMME[b.programm]?.name||"Ergebnisliste");
+  const zeile=(r,i)=>`<tr class="${i%2?"":"alt"}"><td class="c">${r.rang}</td><td>${esc(sName(r.s))}</td>${Array.from({length:L.maxDG},(_,k)=>{const e=r.dgs[k];return `<td class="c">${e?(r.dgs.length>1&&k===r.bestIdx?`<u>${num(e.total)}</u>`:(r.dgs.length===1?`<u>${num(e.total)}</u>`:num(e.total))):"---"}</td>`}).join("")}<td class="c">${num(r.wert,b.modus==="avg")}</td><td class="c">${r.xs||0}</td><td>${esc(r.anm)}</td></tr>`;
+  const team=(b.team||"").split(",").map(s=>s.trim()).filter(Boolean);
+  const dc=["X","10","9","8","7","6","5","1-4","F"];
+  return `<!DOCTYPE html><html lang="de"><head><meta charset="utf-8"><title>Ergebnisliste ${esc(b.name)}</title><style>
+@page{size:A4;margin:0}
+body{font-family:Calibri,Carlito,"Segoe UI",Arial,sans-serif;font-size:11pt;color:#000;margin:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.kopf{position:fixed;top:8mm;left:16mm;right:16mm;height:20mm;text-align:center;font-size:14pt}
+.kopf img{position:absolute;left:0;top:0;height:19mm}
+.kopf span{line-height:20mm}
+.fuss{position:fixed;bottom:8mm;left:16mm;right:16mm;border-top:1px solid #000;padding-top:3px;font-size:9pt;display:flex;justify-content:space-between}
+.fuss div{flex:1}.fuss .m{text-align:center;flex:2.2}.fuss .r{text-align:right}
+table.lay{width:calc(100% - 32mm);margin:0 16mm;border-collapse:collapse}
+table.lay>thead>tr>td,table.lay>tfoot>tr>td,table.lay>tbody>tr>td{border:none;padding:0;background:none}
+.sp-k{height:32mm}.sp-f{height:26mm}
+table.lay+table.lay{break-before:page;page-break-before:always}
+h1{font-size:19pt;margin:0 0 10px}
+h2.sec{font-size:14pt;margin:14px 0 4px;display:list-item;list-style:disc;margin-left:18px}
+.li1{margin-left:46px;display:list-item;list-style:square}.li2{margin-left:76px;display:list-item;list-style:circle}
+p{margin:4px 0}
+table.d{border-collapse:collapse;margin:6px auto}
+table.d th{background:#0f9ed5;color:#fff;font-weight:700;padding:3px 6px;border:1px solid #000;text-align:left}
+table.d td{border:1px solid #000;padding:2px 6px}
+table.d tr.alt td{background:#c8edfb}
+table.d tr{break-inside:avoid}
+.c{text-align:center!important}
+.leg{font-size:8pt;border-collapse:collapse;margin:2px 0 0}.leg td{border:none;padding:0 8px 0 0}
+.unter{display:flex;justify-content:space-around;margin-top:40px;text-align:center}
+.unter div{border-top:1px solid #000;padding-top:4px;min-width:60mm}
+@media screen{body{background:#eee}.kopf,.fuss{display:none}table.lay{background:#fff;max-width:190mm;margin:20px auto;box-shadow:0 1px 6px rgba(0,0,0,.2)}table.lay>tbody>tr>td{padding:10mm}.sp-k,.sp-f{height:0}}
+</style></head><body>
+<div class="kopf"><img src="${VEREIN.logo}" alt=""><span>${esc(VEREIN.name)}</span></div>
+<div class="fuss"><div>${autor?"Autor: "+esc(autor):""}</div><div class="m">${esc(VEREIN.name)}<br>${esc(VEREIN.adresse)}<br>Internet: ${esc(VEREIN.web)}</div><div class="r">Datum: ${heute}</div></div>
+
+<table class="lay"><thead><tr><td><div class="sp-k"></div></td></tr></thead><tfoot><tr><td><div class="sp-f"></div></td></tr></tfoot><tbody><tr><td><h1>Ergebnisliste vom Bewerb „${esc(b.name)}“</h1>
+<p>Der Bewerb fand ${datumText(L.daten)||fmtD(b.start)} statt${L.anzDG?` (${L.anzDG} Durchgang${L.anzDG===1?"":"e"})`:""}${b.programm!=="frei"?" und wurde in Anlehnung an das Regelwerk der FFWGK (15. Ausgabe, 01/2025) durchgeführt":""}.</p>
+<h2 class="sec">Durchführung des Bewerbs</h2>
+<div class="li1">Wettkampf</div>
+<div class="li2">${se.length} Serien à ${se[0]?.schuss||5} Schuss</div><div class="li2">Gesamt ${sch} Schuss</div>
+${beschreibungHTML(b.beschreibung)}
+<h2 class="sec">Wertung</h2>
+<div class="li1">Maximal erreichbare Punktzahl: ${maxGesamt(b)} Punkte</div>
+<div class="li1">Wertung bei mehreren Durchgängen: ${esc(MODI[b.modus]||"")}</div>
+${team.length?`<h2 class="sec">Wettkampfleiterteam</h2>${team.map(t=>`<div class="li1">${esc(t)}</div>`).join("")}`:""}
+</td></tr></tbody></table><table class="lay"><thead><tr><td><div class="sp-k"></div></td></tr></thead><tfoot><tr><td><div class="sp-f"></div></td></tr></tfoot><tbody><tr><td><h2 class="sec">Ergebnisliste</h2>
+<table class="d"><thead><tr><th colspan="${L.maxDG+5}" class="c">${esc(kat)}</th></tr><tr><th>Rang</th><th>Name</th>${dgCols}<th class="c">${wertKopf(b)}</th><th class="c">X</th><th>Anmerkung</th></tr></thead>
+<tbody>${L.rows.map(zeile).join("")}</tbody></table>
+<table class="leg"><tr><td>DG</td><td>Durchgang (Antritt)</td></tr><tr><td>---</td><td>Kein weiterer Durchgang absolviert</td></tr><tr><td><u>123</u></td><td>Unterstrichen = bestes Ergebnis aus den Durchgängen</td></tr><tr><td>X</td><td>Innenzehner</td></tr></table>
+<h2 style="font-size:14pt;margin:16px 0 2px"><u>Hinweis</u>:</h2><p>Bei Punktegleichstand entscheidet die Anzahl der X (Innenzehner), danach die Summe der letzten beiden Serien, dann der beiden davor usw.</p></td></tr></tbody></table>
+
+${L.klassen.length>1?`<table class="lay"><thead><tr><td><div class="sp-k"></div></td></tr></thead><tfoot><tr><td><div class="sp-f"></div></td></tr></tfoot><tbody><tr><td><h2 class="sec">Wertung nach Klassen</h2>${L.klassen.map(kl=>`<table class="d" style="min-width:120mm"><thead><tr><th colspan="5" class="c">${esc(KLASSEN[kl.k])}</th></tr><tr><th>Rang</th><th>Name</th><th>Verein</th><th class="c">${wertKopf(b)}</th><th class="c">X</th></tr></thead><tbody>${kl.rows.map((r,i)=>`<tr class="${i%2?"":"alt"}"><td class="c">${r.rang}</td><td>${esc(sName(r.s))}</td><td>${esc(r.s?.verein||"")}</td><td class="c">${num(r.wert,b.modus==="avg")}</td><td class="c">${r.xs||0}</td></tr>`).join("")}</tbody></table>`).join("")}</td></tr></tbody></table>`:""}
+<table class="lay"><thead><tr><td><div class="sp-k"></div></td></tr></thead><tfoot><tr><td><div class="sp-f"></div></td></tr></tfoot><tbody><tr><td><h2 class="sec">Trefferdetailauswertung</h2>
+<table class="d"><thead><tr><th>Name</th><th class="c">DG</th>${dc.map(c=>`<th class="c">${c}</th>`).join("")}<th class="c">Gesamt</th><th>Anmerkung</th></tr></thead>
+<tbody>${L.details.map((d,i)=>`<tr class="${i%2?"":"alt"}"><td>${esc(d.name)}</td><td class="c">${d.dg}</td>${dc.map(c=>`<td class="c">${d.c?d.c[c]:"–"}</td>`).join("")}<td class="c">${num(d.total)}</td><td>${esc(d.notiz)}</td></tr>`).join("")}</tbody></table>
+<table class="leg"><tr><td>DG</td><td>Durchgang (Antritt)</td></tr><tr><td>X</td><td>Innenzehner</td></tr><tr><td>F</td><td>Fehlschuss</td></tr><tr><td>–</td><td>keine Einzelschüsse erfasst</td></tr></table>
+${(b.leiter||b.schuetzenmeister)?`<div class="unter">${b.leiter?`<div>${esc(b.leiter)}<br>Bewerbsleiter</div>`:""}${b.schuetzenmeister?`<div>${esc(b.schuetzenmeister)}<br>Schützenmeister</div>`:""}</div>`:""}
+${b.waffg!==false?`<h2 class="sec" style="margin-top:30px">Hinweis zur waffenrechtlichen Relevanz</h2><p>Diese Ergebnisliste dient zum Nachweis des ständigen Gebrauches als Sportwaffe gemäß §5, Abs. 2 der 2. Waffengesetz-Durchführungsverordnung zum Waffengesetz 1996.</p>`:""}
+</td></tr></tbody></table>
+<script>window.addEventListener("load",()=>setTimeout(()=>{try{window.print()}catch(e){}},400))<\/script>
+</body></html>`;
+}
+function drucken(b){
+  if(!rangiere(auswertung(b)).length){toast("Noch keine vollständigen Ergebnisse.");return}
+  const html=druckHTML(b);
+  let w=null;if(!window.claude){try{w=window.open("","_blank")}catch(e){}}
+  if(w){w.document.open();w.document.write(html);w.document.close();return}
+  anbieten(dateiname(b)+"_Ergebnisliste.html",html,"text/html");
+  toast("Druckdatei gespeichert – öffnen, der Druckdialog startet automatisch (auch „Als PDF speichern“).");
+}
+
+/* ---- minimaler XLSX-Schreiber (ohne externe Bibliothek) ---- */
+const CRC_T=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+function crc32(u){let c=0xFFFFFFFF;for(let i=0;i<u.length;i++)c=CRC_T[(c^u[i])&255]^(c>>>8);return (c^0xFFFFFFFF)>>>0}
+function zipStore(files){ // [{name, data:string}]
+  const enc=new TextEncoder(),parts=[],central=[];let off=0;
+  files.forEach(f=>{const nm=enc.encode(f.name),d=f.data instanceof Uint8Array?f.data:enc.encode(f.data),crc=crc32(d);
+    const lh=new DataView(new ArrayBuffer(30));lh.setUint32(0,0x04034b50,true);lh.setUint16(4,20,true);lh.setUint16(6,0x0800,true);lh.setUint16(8,0,true);
+    lh.setUint32(14,crc,true);lh.setUint32(18,d.length,true);lh.setUint32(22,d.length,true);lh.setUint16(26,nm.length,true);
+    parts.push(new Uint8Array(lh.buffer),nm,d);
+    const ch=new DataView(new ArrayBuffer(46));ch.setUint32(0,0x02014b50,true);ch.setUint16(4,20,true);ch.setUint16(6,20,true);ch.setUint16(8,0x0800,true);
+    ch.setUint32(16,crc,true);ch.setUint32(20,d.length,true);ch.setUint32(24,d.length,true);ch.setUint16(28,nm.length,true);ch.setUint32(42,off,true);
+    central.push(new Uint8Array(ch.buffer),nm);off+=30+nm.length+d.length});
+  const cs=central.reduce((a,u)=>a+u.length,0);const end=new DataView(new ArrayBuffer(22));
+  end.setUint32(0,0x06054b50,true);end.setUint16(8,files.length,true);end.setUint16(10,files.length,true);end.setUint32(12,cs,true);end.setUint32(16,off,true);
+  return new Blob([...parts,...central,new Uint8Array(end.buffer)],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+}
+const xe=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,"");
+function colName(i){let s="";i++;while(i>0){const m=(i-1)%26;s=String.fromCharCode(65+m)+s;i=Math.floor((i-1)/26)}return s}
+// Stile: 0 normal,1 Titel,2 Text umbrechend,3 Kopf blau,4 Zelle,5 Zelle zentriert,6 Zelle hell,7 Zelle hell zentriert,8 zentr. unterstr.,9 hell zentr. unterstr.,10 Legende,11 Überschrift,12 Kopf blau zentriert
+const XLSX_STYLES=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+<fonts count="6"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="16"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font><font><u/><sz val="11"/><name val="Calibri"/></font><font><sz val="9"/><name val="Calibri"/></font><font><b/><sz val="13"/><name val="Calibri"/></font></fonts>
+<fills count="4"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF0F9ED5"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFC8EDFB"/><bgColor indexed="64"/></patternFill></fill></fills>
+<borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left style="thin"><color auto="1"/></left><right style="thin"><color auto="1"/></right><top style="thin"><color auto="1"/></top><bottom style="thin"><color auto="1"/></bottom><diagonal/></border></borders>
+<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+<cellXfs count="14">
+<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>
+<xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/>
+<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" applyAlignment="1"><alignment wrapText="1" vertical="top"/></xf>
+<xf numFmtId="0" fontId="2" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" wrapText="1"/></xf>
+<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1"/>
+<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf>
+<xf numFmtId="0" fontId="0" fillId="3" borderId="1" xfId="0" applyFill="1" applyBorder="1"/>
+<xf numFmtId="0" fontId="0" fillId="3" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf>
+<xf numFmtId="0" fontId="3" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf>
+<xf numFmtId="0" fontId="3" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf>
+<xf numFmtId="0" fontId="4" fillId="0" borderId="0" xfId="0" applyFont="1"/>
+<xf numFmtId="0" fontId="5" fillId="0" borderId="0" xfId="0" applyFont="1"/>
+<xf numFmtId="0" fontId="2" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+<xf numFmtId="0" fontId="5" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+</cellXfs><cellStyles count="1"><cellStyle name="Standard" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
+function sheetXML(sh){ // sh={rows:[[{v,s}|null]], cols:[breiten], merges:["A1:F1"], heights:{rowIdx:h}}
+  const rows=sh.rows.map((r,ri)=>{const cells=(r||[]).map((c,ci)=>{if(c==null)return "";const ref=colName(ci)+(ri+1),s=c.s||0;
+    if(c.v===""||c.v==null)return `<c r="${ref}" s="${s}"/>`;
+    return typeof c.v==="number"?`<c r="${ref}" s="${s}"><v>${c.v}</v></c>`:`<c r="${ref}" s="${s}" t="inlineStr"><is><t xml:space="preserve">${xe(c.v)}</t></is></c>`}).join("");
+    const ht=sh.heights&&sh.heights[ri]?` ht="${sh.heights[ri]}" customHeight="1"`:"";return `<row r="${ri+1}"${ht}>${cells}</row>`}).join("");
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheetPr><pageSetUpPr fitToPage="1"/></sheetPr><sheetViews><sheetView workbookViewId="0" showGridLines="0"/></sheetViews><sheetFormatPr defaultRowHeight="15"/>
+<cols>${sh.cols.map((w,i)=>`<col min="${i+1}" max="${i+1}" width="${w}" customWidth="1"/>`).join("")}</cols><sheetData>${rows}</sheetData>
+${sh.merges&&sh.merges.length?`<mergeCells count="${sh.merges.length}">${sh.merges.map(m=>`<mergeCell ref="${m}"/>`).join("")}</mergeCells>`:""}
+<pageMargins left="0.6" right="0.6" top="0.8" bottom="0.8" header="0.3" footer="0.3"/><pageSetup paperSize="9" orientation="portrait" fitToWidth="1" fitToHeight="0"/>
+<headerFooter><oddHeader>&amp;C&amp;14${xe(VEREIN.name)}</oddHeader><oddFooter>&amp;L${xe(sh.autor?"Autor: "+sh.autor:"")}&amp;C${xe(VEREIN.name)}, ${xe(VEREIN.adresse)}&amp;R${xe("Datum: "+fmtD(today()))}</oddFooter></headerFooter>${sh.logo?'<drawing r:id="rId1"/>':""}</worksheet>`;
+}
+function logoBytes(){const b64=VEREIN.logo.split(",")[1],s=atob(b64),u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return u}
+function xlsxDatei(sheets){
+  sheets.forEach(s=>s.logo=true);
+  const drawing=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><xdr:oneCellAnchor><xdr:from><xdr:col>0</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>0</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:from><xdr:ext cx="853440" cy="640080"/><xdr:pic><xdr:nvPicPr><xdr:cNvPr id="2" name="KSV Logo"/><xdr:cNvPicPr><a:picLocks noChangeAspect="1"/></xdr:cNvPicPr></xdr:nvPicPr><xdr:blipFill><a:blip r:embed="rId1"/><a:stretch><a:fillRect/></a:stretch></xdr:blipFill><xdr:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="853440" cy="640080"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></xdr:spPr></xdr:pic><xdr:clientData/></xdr:oneCellAnchor></xdr:wsDr>`;
+  const extra=[{name:"xl/media/logo.jpeg",data:logoBytes()},
+    {name:"xl/drawings/_rels/drawing1.xml.rels",data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/logo.jpeg"/></Relationships>`},
+    ...sheets.map((s,i)=>({name:`xl/drawings/drawing${i+1}.xml`,data:drawing})),
+    ...sheets.map((s,i)=>({name:`xl/drawings/_rels/drawing${i+1}.xml.rels`,data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/logo.jpeg"/></Relationships>`})),
+    ...sheets.map((s,i)=>({name:`xl/worksheets/_rels/sheet${i+1}.xml.rels`,data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing" Target="../drawings/drawing${i+1}.xml"/></Relationships>`}))].filter((f,i,a)=>a.findIndex(g=>g.name===f.name)===i);
+  const files=[
+    {name:"[Content_Types].xml",data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="jpeg" ContentType="image/jpeg"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${sheets.map((s,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/drawings/drawing${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/>`).join("")}</Types>`},
+    {name:"_rels/.rels",data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`},
+    {name:"xl/workbook.xml",data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>${sheets.map((s,i)=>`<sheet name="${xe(s.name)}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join("")}</sheets></workbook>`},
+    {name:"xl/_rels/workbook.xml.rels",data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${sheets.map((s,i)=>`<Relationship Id="rId${i+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join("")}<Relationship Id="rId${sheets.length+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`},
+    {name:"xl/styles.xml",data:XLSX_STYLES},
+    ...sheets.map((s,i)=>({name:`xl/worksheets/sheet${i+1}.xml`,data:sheetXML(s)})),...extra];
+  return zipStore(files);
+}
+function excelListe(b){
+  const L=listeDaten(b),kat=b.kategorie||(PROGRAMME[b.programm]?.name||"Ergebnisliste"),avg=b.modus==="avg";
+  const val=v=>avg?Math.round(v*10)/10:v;
+  // Blatt 1: Ergebnisliste
+  const nc=L.maxDG+5,R=[],M=[],H={};
+  R.push([{v:"Ergebnisliste vom Bewerb „"+b.name+"“",s:1}]);H[0]=24;
+  R.push([{v:`Der Bewerb fand ${datumText(L.daten)||fmtD(b.start)} statt${L.anzDG?` (${L.anzDG} Durchgänge)`:""}. ${(b.serien||[]).length} Serien à ${(b.serien||[])[0]?.schuss||5} Schuss, maximal ${maxGesamt(b)} Punkte. Wertung: ${MODI[b.modus]||""}.`,s:2}]);M.push(`A2:${colName(nc-1)}2`);H[1]=32;
+  R.push([]);
+  const k0=R.length;R.push([{v:kat,s:12},...Array(nc-1).fill({v:"",s:12})]);M.push(`A${k0+1}:${colName(nc-1)}${k0+1}`);
+  R.push([{v:"Rang",s:3},{v:"Name",s:3},...Array.from({length:L.maxDG},(_,i)=>({v:(i+1)+". DG",s:12})),{v:wertKopf(b).replace("-",""),s:12},{v:"X",s:12},{v:"Anmerkung",s:3}]);H[R.length-1]=30;
+  L.rows.forEach((r,i)=>{const alt=i%2===0;const C=alt?7:5,Lf=alt?6:4,U=alt?9:8;
+    R.push([{v:r.rang,s:C},{v:sName(r.s),s:Lf},...Array.from({length:L.maxDG},(_,k)=>{const e=r.dgs[k];return e?{v:e.total,s:k===r.bestIdx?U:C}:{v:"---",s:C}}),{v:val(r.wert),s:C},{v:r.xs||0,s:C},{v:r.anm,s:Lf}])});
+  R.push([{v:"DG",s:10},{v:"Durchgang (Antritt)",s:10}]);R.push([{v:"---",s:10},{v:"Kein weiterer Durchgang absolviert",s:10}]);
+  R.push([{v:"123",s:10},{v:"Unterstrichen = bestes Ergebnis aus den Durchgängen",s:10}]);R.push([{v:"X",s:10},{v:"Innenzehner",s:10}]);
+  R.push([]);R.push([{v:"Hinweis:",s:11}]);R.push([{v:"Bei Punktegleichstand entscheidet die Anzahl der X (Innenzehner), danach die Summe der letzten beiden Serien, dann der beiden davor usw.",s:0}]);
+  const sh1={name:"Ergebnisliste",rows:R,merges:M,heights:H,autor:b.leiter,cols:[7,30,...Array(L.maxDG).fill(9),11,6,34]};
+  // Blatt 2: Klassen
+  const R2=[[{v:"Wertung nach Klassen – "+b.name,s:1}],[]],M2=[];
+  L.klassen.forEach(kl=>{const r0=R2.length;R2.push([{v:KLASSEN[kl.k],s:12},{v:"",s:12},{v:"",s:12},{v:"",s:12},{v:"",s:12},{v:"",s:12}]);M2.push(`A${r0+1}:F${r0+1}`);
+    R2.push([{v:"Rang",s:3},{v:"Name",s:3},{v:"Verein",s:3},{v:"Jg.",s:12},{v:wertKopf(b).replace("-",""),s:12},{v:"X",s:12}]);
+    kl.rows.forEach((r,i)=>{const alt=i%2===0,C=alt?7:5,Lf=alt?6:4;R2.push([{v:r.rang,s:C},{v:sName(r.s),s:Lf},{v:r.s?.verein||"",s:Lf},{v:Number(r.s?.geburtsjahr)||"",s:C},{v:val(r.wert),s:C},{v:r.xs||0,s:C}])});
+    R2.push([])});
+  const sh2={name:"Klassen",rows:R2,merges:M2,autor:b.leiter,cols:[7,30,24,8,12,6]};
+  // Blatt 3: Trefferdetail
+  const dc=["X","10","9","8","7","6","5","1-4","F"];const sh3m=[];
+  const R3=[[{v:"Trefferdetailauswertung – "+b.name,s:1}],[],[{v:"Name",s:3},{v:"DG",s:12},...dc.map(c=>({v:c,s:12})),{v:"Gesamt",s:12},{v:"Anmerkung",s:3}]];
+  L.details.forEach((d,i)=>{const alt=i%2===0,C=alt?7:5,Lf=alt?6:4;R3.push([{v:d.name,s:Lf},{v:d.dg,s:C},...dc.map(c=>({v:d.c?d.c[c]:"–",s:C})),{v:d.total,s:C},{v:d.notiz,s:Lf}])});
+  R3.push([]);R3.push([{v:"DG = Durchgang (Antritt) · X = Innenzehner · F = Fehlschuss · – = keine Einzelschüsse erfasst",s:10}]);
+  if(b.leiter||b.schuetzenmeister){R3.push([]);R3.push([]);R3.push([{v:b.leiter||"",s:0},null,null,null,null,null,null,{v:b.schuetzenmeister||"",s:0}]);R3.push([{v:b.leiter?"Bewerbsleiter":"",s:10},null,null,null,null,null,null,{v:b.schuetzenmeister?"Schützenmeister":"",s:10}])}
+  if(b.waffg!==false){R3.push([]);R3.push([{v:"Hinweis zur waffenrechtlichen Relevanz",s:11}]);R3.push([{v:"Diese Ergebnisliste dient zum Nachweis des ständigen Gebrauches als Sportwaffe gemäß §5, Abs. 2 der 2. Waffengesetz-Durchführungsverordnung zum Waffengesetz 1996.",s:2}]);
+    const ri=R3.length;sh3m.push(`A${ri}:M${ri}`)}
+  const sh3={name:"Trefferdetail",rows:R3,merges:sh3m,heights:{[R3.length-1]:32},autor:b.leiter,cols:[30,6,...dc.map(()=>6),9,24]};
+  [sh1,sh2,sh3].forEach(sh=>{ // 4 Zeilen Platz für Logo + Vereinsname
+    const nc=Math.max(...sh.rows.map(r=>(r||[]).length),sh.cols.length);
+    sh.rows=[[],[],[],[],...sh.rows];
+    sh.merges=[...(sh.merges||[]).map(m=>m.replace(/([A-Z]+)(\d+)/g,(_,c,n)=>c+(Number(n)+4)))];
+    if(sh.heights){const nh={};Object.entries(sh.heights).forEach(([k,v])=>nh[Number(k)+4]=v);sh.heights=nh}});
+  return xlsxDatei([sh1,sh2,sh3]);
+}
+
+/* ================= Events ================= */
+function on(id,ev,fn){const e=document.getElementById(id);if(e)e.addEventListener(ev,fn)}
+function onAll(sel,ev,fn){document.querySelectorAll(sel).forEach(e=>e.addEventListener(ev,()=>fn(e)))}
+function bind(){
+  document.querySelectorAll("[data-addx]").forEach(bt=>{bt.addEventListener("mousedown",e=>e.preventDefault());bt.addEventListener("click",()=>{
+    const i=document.getElementById(bt.dataset.addx);if(!i)return;i.value=(i.value||"")+"x";i.dataset.dirty="1";i.dispatchEvent(new Event("input"));i.focus()})});
+  const b=UI.bewerbId&&S.bewerbe[UI.bewerbId];
+  on("neuBewerb","click",()=>{UI.bewerbId="__neu";$("#app").innerHTML=vBewerbForm(null);bindForm(null)});
+  onAll("[data-open]","click",e=>{UI.bewerbId=e.dataset.open;UI.tab="wertung";UI.editErg=null;UI.suche="";render()});
+  on("zurueck","click",()=>{UI.bewerbId=null;render()});
+  onAll("[data-tab]","click",e=>{UI.tab=e.dataset.tab;UI.editErg=null;UI.suche="";render()});
+  onAll("[data-filter]","click",e=>{UI.filter=e.dataset.filter;render()});
+  if(b){
+    on("csvWertung","click",()=>anbieten(dateiname(b)+"_Wertung.csv",wertungCSV(b),"text/csv"));
+    on("txtWertung","click",()=>kopieren(wertungText(b)));
+    on("druckListe","click",()=>drucken(b));
+    on("xlsxListe","click",()=>{try{const blob=excelListe(b);anbieten(dateiname(b)+"_Ergebnisliste.xlsx",blob,"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")}catch(e){console.error(e);toast("Excel-Export fehlgeschlagen.")}});
+    on("csvAntritte","click",()=>{const l=["Datum;Durchgang;Stand;Nachname;Vorname;Verein;Klasse;Gesamt;X;"+(b.serien||[]).map(s=>s.label).join(";")+";Notiz"];
+      Object.values(S.ergebnisse).filter(r=>r.bewerbId===b.id).sort((x,y)=>(x.datum||"").localeCompare(y.datum||"")).forEach(r=>{const s=S.schuetzen[r.sid]||{};
+      l.push([fmtD(r.datum),r.dg?dgNr(b,r.dg)||"":"",r.stand||"",s.nachname,s.vorname,s.verein,r.sid?KLASSEN[klasseVon(b,r.sid)]:"(ohne Namen)",num(summe(r)),xSumme(r),...r.serien.map((v,i)=>serText(v,(r.xs||[])[i])),r.notiz].map(csvCell).join(";"))});
+      anbieten(dateiname(b)+"_Antritte.csv","﻿"+l.join("\r\n"),"text/csv")});
+    // Teilnehmer
+    on("tnSuche","input",e=>{UI.suche=e.target.value;render()});
+    onAll("[data-addtn]","click",e=>{melde(b,e.dataset.addtn);toast("Gemeldet.")});
+    on("tnNeu","click",()=>schuetzeDialog(null,o=>{melde(S.bewerbe[b.id],o.id);toast(sName(o)+" angelegt und gemeldet.")}));
+    onAll("[data-klasse]","change",e=>put("bewerbe",{...b,teilnehmer:b.teilnehmer.map(t=>t.sid===e.dataset.klasse?{...t,klasse:e.value}:t)}));
+    onAll("[data-gast]","change",e=>put("bewerbe",{...b,teilnehmer:b.teilnehmer.map(t=>t.sid===e.dataset.gast?{...t,gast:e.checked}:t)}));
+    onAll("[data-deltn]","click",e=>{
+      const sid=e.dataset.deltn;const n=Object.values(S.ergebnisse).filter(r=>r.bewerbId===b.id&&r.sid===sid);
+      bestaetigen(`${esc(sName(S.schuetzen[sid]))} aus dem Bewerb entfernen?${n.length?` Dabei werden auch ${n.length} Ergebnis(se) gelöscht.`:""}`,()=>{
+        n.forEach(r=>del("ergebnisse",r.id));put("bewerbe",{...S.bewerbe[b.id],teilnehmer:S.bewerbe[b.id].teilnehmer.filter(t=>t.sid!==sid)})})});
+    // Erfassung
+    on("eSid","change",e=>{UI.erfassSid=e.target.value;UI.erfassStand=$("#eStand").value.trim();render();const f=$("#ser0");f&&f.focus()});
+    on("eStand","input",e=>{if(!UI.editErg)UI.erfassStand=e.target.value.trim()});
+    on("eStand","keydown",ev=>{if(ev.key==="Enter"){ev.preventDefault();const s=$("#eSid");s&&s.focus()}});
+    on("schnellNeu","click",()=>schuetzeDialog(null,o=>{melde(S.bewerbe[b.id],o.id);UI.erfassSid=o.id;render();setTimeout(()=>{const f=$("#ser0");f&&f.focus()},50)}));
+    const sers=[...document.querySelectorAll(".ser")];
+    const recalc=()=>{let t=0,xx=0;sers.forEach(i=>{const p=parseSerie(i.value,b.serien[+i.dataset.i],b.zehntel);
+      i.classList.toggle("bad",!p.ok);if(p.ok&&!p.leer){t+=p.v;xx+=p.x}});
+      const e=$("#eTotal");if(e)e.textContent=num(Math.round(t*10)/10);const ex=$("#eX");if(ex)ex.textContent=xx?xx+" x (Innenzehner)":""};
+    sers.forEach((i,ix)=>{i.addEventListener("input",recalc);i.addEventListener("keydown",ev=>{if(ev.key==="Enter"){ev.preventDefault();if(sers[ix+1])sers[ix+1].focus();else $("#eSave").click()}})});
+    recalc();
+    on("eAbbr","click",()=>{UI.editErg=null;render()});
+    onAll("[data-erfmode]","click",e=>{UI.erfMode=e.dataset.erfmode;render()});
+    const focusDg=()=>{const f=[...document.querySelectorAll(".shot")].find(i=>i.value==="")||document.querySelector(".shot");if(f){f.focus();f.scrollIntoView({block:"center"})}};
+    onAll("[data-dgopen]","click",e=>{UI.dg=e.dataset.dgopen;UI.dgSerie=null;render();focusDg()});
+    on("dgBack","click",()=>{UI.dg=null;UI.dgSerie=null;render()});
+    onAll("[data-dgserie]","click",e=>{UI.dgSerie=Number(e.dataset.dgserie);render();focusDg()});
+    on("dgStart","click",()=>{
+      clearDirty();
+      const staende=parseStaende($("#dgStaende").value);
+      if(!staende.length){toast("Bitte Stände angeben, z. B. 1-5.");return}
+      const dgid=uid(),datum=$("#dgDatum").value||today(),now=new Date().toISOString(),n=b.serien.length,cur=S.bewerbe[b.id],txt=$("#dgStaende").value.trim();
+      staende.forEach((st,i)=>{
+        put("ergebnisse",{id:dgid+"-"+i,bewerbId:b.id,sid:"",stand:st,dg:dgid,datum,serien:Array(n).fill(null),total:0,notiz:"",erstellt:now})});
+      if(cur.letzteStaende!==txt)put("bewerbe",{...cur,letzteStaende:txt});
+      UI.dg=dgid;UI.dgSerie=0;render();focusDg();
+    });
+    const shots=[...document.querySelectorAll(".shot")];
+    const shotInfo=i=>{const v=i.value.trim().toLowerCase();const se=b.serien[UI.dgAktiv]||{};const mr=Number(se.maxRing)||10;
+      if(v==="")return {leer:true};if(v==="x")return {v:mr,x:1};
+      if(/^\d+$/.test(v)){const n=+v;return n>mr?{warn:`${n} ist mehr als ${mr}`}:{v:n,x:0}}
+      return {warn:`„${i.value}“ ist kein gültiger Wert`}};
+    const rowState=rid=>{const ins=shots.filter(i=>i.dataset.rid===rid);let v=0,x=0,f=0,warn=[];
+      ins.forEach(i=>{const s=shotInfo(i);i.classList.toggle("bad",!!s.warn);if(s.warn)warn.push({k:+i.dataset.k,msg:s.warn});else if(!s.leer){f++;v+=s.v;x+=s.x}});
+      return {ins,v,x,f,n:ins.length,warn,vals:ins.map(i=>i.value.trim().toLowerCase())}};
+    const dgUpdate=()=>{const msgs=[];
+      [...new Set(shots.map(i=>i.dataset.rid))].forEach(rid=>{const r=S.ergebnisse[rid];if(!r)return;const st=rowState(rid);
+        const ser=[...r.serien],xs=[...(r.xs||[])];if(st.f){ser[UI.dgAktiv]=st.v;xs[UI.dgAktiv]=st.x}
+        const s=$("#dgsum_"+rid);if(s)s.textContent=num(summe({serien:ser}));const sx=$("#dgx_"+rid);if(sx){const t=xSumme({xs});sx.textContent=t?t+"x":""}
+        st.warn.forEach(w=>msgs.push(`Stand ${esc(r.stand||"?")}, Schuss ${w.k+1}: ${esc(w.msg)} – höchstens ${Number(b.serien[UI.dgAktiv].maxRing)||10} Ringe pro Schuss möglich.`))});
+      const box=$("#dgWarn");if(box)box.innerHTML=msgs.length?`<div class="notice"><b>⚠ Bitte prüfen:</b><br>${msgs.join("<br>")}</div>`:"";return msgs.length};
+    const weiter=i=>{const ix=shots.indexOf(i);if(shots[ix+1])shots[ix+1].focus()}; // kein automatisches Speichern
+    shots.forEach(i=>{
+      i.addEventListener("focus",()=>{UI.lastShot=i.id;i.select&&i.select()});
+      i.addEventListener("change",dgUpdate);
+      i.addEventListener("input",()=>{const n=dgUpdate();const v=i.value.trim().toLowerCase();
+        const s=shotInfo(i);if(s.warn){toast("⚠ "+s.warn+" – höchstens "+(Number(b.serien[UI.dgAktiv].maxRing)||10)+" Ringe pro Schuss!");return}
+        });
+      i.addEventListener("keydown",ev=>{if(ev.key==="Enter"){ev.preventDefault();weiter(i)}else if(ev.key==="Backspace"&&i.value===""){const ix=shots.indexOf(i);if(ix>0){ev.preventDefault();shots[ix-1].focus()}}});
+    });
+    document.querySelectorAll("[data-rowx]").forEach(bt=>{bt.addEventListener("mousedown",e=>e.preventDefault());bt.addEventListener("click",()=>{
+      const row=shots.filter(i=>i.dataset.rid===bt.dataset.rowx);let t=row.find(i=>i.id===UI.lastShot)||row.find(i=>i.value==="")||row[row.length-1];
+      if(!t)return;t.value="x";t.dataset.dirty="1";dgUpdate();t.focus()})});
+    if(shots.length)dgUpdate();
+    on("dgSave","click",()=>{
+      if(dgUpdate()){toast("⚠ Werte über 10 bzw. ungültige Werte – bitte korrigieren.");const f=shots.find(i=>i.classList.contains("bad"));f&&f.focus();return}
+      const si=UI.dgAktiv,n=b.serien.length;
+      const rids=[...new Set(shots.map(i=>i.dataset.rid))];
+      const halb=rids.map(rid=>({r:S.ergebnisse[rid],st:rowState(rid)})).filter(o=>o.r&&o.st.f>0&&o.st.f<o.st.n);
+      if(si===n-1){ // letzte Serie: nur speichern, wenn jeder Stand einen Namen hat
+        const ohne=rids.map(rid=>S.ergebnisse[rid]).filter(r=>r&&!(r.sid&&S.schuetzen[r.sid]));
+        if(ohne.length){const box=$("#dgWarnName");if(box)box.innerHTML=`<div class="notice"><b>⚠ Namen fehlen – Serie wurde nicht gespeichert:</b><br>${ohne.map(r=>`Stand ${esc(r.stand||"?")}: noch kein Name zugeordnet.`).join("<br>")}<br>Bitte zuerst die Namen zuordnen und dann „Serie ${si+1} speichern“ tippen.</div>`;
+          toast("⚠ Nicht gespeichert – bitte zuerst allen Ständen einen Namen zuordnen.");const s=document.querySelector(`[data-assign="${ohne[0].id}"]`);if(s){s.focus();s.scrollIntoView({block:"center"})}return}
+      }
+      if(halb.length){const box=$("#dgWarn");if(box)box.innerHTML=`<div class="notice"><b>⚠ Unvollständig:</b><br>${halb.map(o=>`Stand ${esc(o.r.stand||"?")}: ${o.st.f} von ${o.st.n} Schüssen eingetragen (Fehlschuss = 0).`).join("<br>")}</div>`;
+        toast("⚠ Nicht alle Schüsse eingetragen.");const f=shots.find(i=>i.dataset.rid===halb[0].r.id&&i.value==="");f&&f.focus();return}
+      clearDirty();let leer=0;
+      rids.forEach(rid=>{const r=S.ergebnisse[rid];if(!r)return;const st=rowState(rid);
+        const ser=[...(r.serien||[])];while(ser.length<n)ser.push(null);const xs=[...(r.xs||[])];while(xs.length<n)xs.push(0);const sch=[...(r.schuss||[])];while(sch.length<n)sch.push("");
+        let v,x,txt;
+        if(st.f===0){if(sch[si]){v=null;x=0;txt=""}else{if(ser[si]==null||ser[si]==="")leer++;return}}
+        else{v=st.v;x=st.x;txt=st.vals.join(",")}
+        if(v==null)leer++;
+        if(ser[si]===v&&(xs[si]||0)===x&&sch[si]===txt)return;
+        ser[si]=v;xs[si]=x;sch[si]=txt;const o={...r,serien:ser,xs,schuss:sch};o.total=summe(o);put("ergebnisse",o)});
+      const dg=durchgaenge(S.bewerbe[b.id]).find(d=>d.id===UI.dg);
+      if(dg&&dg.fertig){toast("Durchgang "+dg.nr+" – "+b.name+" vollständig – alle Ergebnisse sind in der Wertung.");UI.dg=null;UI.dgSerie=null;render();window.scrollTo(0,0);return}
+      else{toast(`${b.serien[si].label} gespeichert${leer?` – ${leer} Stand/Stände leer gelassen`:""}.`);UI.dgSerie=si<n-1?si+1:null}
+      render();focusDg();
+    });
+    on("dgAdd","click",()=>{const st=$("#dgAddStand").value.trim();if(!st)return;const dg=durchgaenge(b).find(d=>d.id===UI.dg);if(!dg)return;
+      if(dg.rows.some(r=>String(r.stand)===st)){toast("Stand "+st+" ist schon im Durchgang.");return}
+      put("ergebnisse",{id:uid(),bewerbId:b.id,sid:"",stand:st,dg:dg.id,datum:dg.datum,serien:Array(b.serien.length).fill(null),total:0,notiz:"",erstellt:dg.start||new Date().toISOString()})});
+    onAll("[data-dgdel]","click",e=>del("ergebnisse",e.dataset.dgdel));
+    on("eSave","click",()=>{clearDirty();
+      const stand=$("#eStand").value.trim();
+      let sid=$("#eSid").value;
+      if(!sid&&!stand){toast("Bitte Stand-Nr. oder Namen angeben.");$("#eStand").focus();return}
+      const ps=sers.map(i=>parseSerie(i.value,b.serien[+i.dataset.i],b.zehntel));
+      if(ps.some(p=>!p.ok)){toast("Ungültige Serienwerte – rot markiert.");return}
+      if(ps.some(p=>p.leer)){toast("Bitte alle Serien ausfüllen (auch 0).");return}
+      const vals=ps.map(p=>p.v),xs=ps.map(p=>p.x);
+      const total=Math.round(vals.reduce((a,v)=>a+v,0)*10)/10;
+      const ed=UI.editErg&&S.ergebnisse[UI.editErg];
+      const o=ed?{...ed}:{id:uid(),bewerbId:b.id,erstellt:new Date().toISOString()};
+      o.schuss=(o.schuss||[]).map((s,k)=>ed&&ed.serien[k]===vals[k]&&((ed.xs||[])[k]||0)===xs[k]?s:"");
+      Object.assign(o,{sid,serien:vals,xs,total,stand,datum:$("#eDatum").value||today(),notiz:$("#eNotiz").value.trim()});
+      put("ergebnisse",o);
+      toast(sid?`${stand?"Stand "+stand+" · ":""}${sName(S.schuetzen[sid])}: ${num(total)} Ringe gespeichert.`:`Stand ${stand}: ${num(total)} Ringe gespeichert – Name kann später zugeordnet werden.`);
+      UI.editErg=null;UI.erfassStand="";
+      if(!ed){UI.erfassSid="";render();const s=$("#eStand");s&&s.focus()}else render();
+    });
+    onAll("[data-editerg]","click",e=>{const r0=S.ergebnisse[e.dataset.editerg];
+      if(r0&&r0.dg&&!komplett(b,r0)){UI.tab="erfassung";UI.erfMode="serie";UI.dg=r0.dg;UI.dgSerie=null;render();window.scrollTo(0,0);return}
+      UI.editErg=e.dataset.editerg;UI.erfassSid=(S.ergebnisse[e.dataset.editerg]||{}).sid||"";UI.tab="erfassung";render();window.scrollTo(0,0)});
+    onAll("[data-namechg]","click",e=>{const r=S.ergebnisse[e.dataset.namechg];if(!r)return;
+      bestaetigen(`Stand ${esc(r.stand||"?")} ist <b>${esc(sName(S.schuetzen[r.sid]))}</b> zugeordnet. Möchtest du den Namen wirklich ändern?`,()=>{UI.nameEdit=r.id;render(true);const s=document.querySelector(`[data-assign="${r.id}"]`);s&&s.focus()},"Ja, Namen ändern","");});
+    onAll("[data-namecancel]","click",()=>{UI.nameEdit=null;render(true)});
+    onAll("[data-assign]","change",e=>{const v=e.value;if(!v)return;const rid=e.dataset.assign,r=S.ergebnisse[rid];
+      const fertig=sid=>{UI.nameEdit=null;zuordnen(b.id,rid,sid)};
+      if(v==="__neu"){e.value="";schuetzeDialog(null,o=>fertig(o.id));return}
+      if(v==="__weg"){UI.nameEdit=null;put("ergebnisse",{...r,sid:""});toast(`Zuordnung von Stand ${r.stand||"?"} entfernt.`);return}
+      if(r&&r.sid===v){UI.nameEdit=null;render(true);return}
+      fertig(v)});
+    onAll("[data-delerg]","click",e=>{const r=S.ergebnisse[e.dataset.delerg];bestaetigen(`Ergebnis ${num(r.total)} von ${r.sid?esc(sName(S.schuetzen[r.sid])):"Stand "+esc(r.stand||"?")} (${fmtD(r.datum)}) löschen?`,()=>del("ergebnisse",r.id))});
+    if(UI.tab==="einstellungen")bindForm(b);
+  }
+  // Schützen
+  on("sSuche","input",e=>{UI.suche=e.target.value;render()});
+  on("sNeu","click",()=>schuetzeDialog(null));
+  onAll("[data-editsch]","click",e=>schuetzeDialog(S.schuetzen[e.dataset.editsch]));
+  // Daten
+  on("expJson","click",()=>anbieten(`KSV_Bewerbe_Sicherung_${today()}.json`,JSON.stringify({app:"ksv-bewerbe",version:1,exportiert:new Date().toISOString(),...S},null,1),"application/json"));
+  on("cpJson","click",()=>kopieren(JSON.stringify({app:"ksv-bewerbe",version:1,...S})));
+  on("impFile","change",e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const j=JSON.parse(rd.result);let n=0;
+    COLLS.forEach(k=>Object.values(j[k]||{}).forEach(o=>{if(o&&o.id){put(k,o);n++}}));toast(n+" Datensätze importiert.")}catch(x){toast("Datei konnte nicht gelesen werden.")}};rd.readAsText(f)});
+  on("csvPImp","click",()=>{const t=$("#csvP").value.trim();if(!t)return;let n=0;
+    t.split(/\r?\n/).forEach(l=>{const c=l.split(/[;\t]/).map(x=>x.trim());if(!c[0]||/^nachname$/i.test(c[0]))return;
+      const g=(c[3]||"m").toLowerCase();put("schuetzen",{id:uid(),nachname:c[0],vorname:c[1]||"",geburtsjahr:c[2]||"",geschlecht:g.startsWith("w")||g.startsWith("f")?"w":g.startsWith("x")||g.startsWith("d")||g.startsWith("i")?"x":"m",verein:c[4]||""});n++});
+    toast(n+" Personen importiert.")});
+  on("migr","click",()=>{try{const j=JSON.parse(localStorage.getItem(LK));let n=0;COLLS.forEach(k=>Object.values(j[k]||{}).forEach(o=>{put(k,o);n++}));
+    localStorage.setItem(LK+"_uebernommen",localStorage.getItem(LK));localStorage.removeItem(LK);toast(n+" Datensätze übernommen.")}catch(e){toast("Übernahme fehlgeschlagen.")}});
+}
+function parseStaende(t){const out=[];String(t||"").split(/[\s,;]+/).forEach(p=>{const m=p.match(/^(\d+)\s*-\s*(\d+)$/);
+  if(m){let a=+m[1],z=+m[2];if(z<a)[a,z]=[z,a];for(let i=a;i<=z&&out.length<60;i++)out.push(String(i))}else if(/^\d+$/.test(p))out.push(String(+p))});return [...new Set(out)]}
+function dateiname(b){return (b.name||"Bewerb").replace(/[^\wäöüÄÖÜß-]+/g,"_")}
+function bindForm(b){
+  on("fProg","change",e=>{$("#freiBox").style.display=e.target.value==="frei"?"":"none"});
+  on("fAbbr","click",()=>{UI.bewerbId=null;render()});
+  on("fDel","click",()=>{const n=Object.values(S.ergebnisse).filter(r=>r.bewerbId===b.id);
+    bestaetigen(`Bewerb „${esc(b.name)}“ mit ${n.length} Ergebnis(sen) endgültig löschen? (Personen bleiben erhalten.)`,()=>{n.forEach(r=>del("ergebnisse",r.id));UI.bewerbId=null;del("bewerbe",b.id)})});
+  on("fSave","click",()=>{
+    const name=$("#fName").value.trim();if(!name){toast("Bitte einen Namen eingeben.");$("#fName").focus();return}
+    const prog=$("#fProg").value;
+    let serien;
+    if(prog==="frei"){const n=Math.min(40,Math.max(1,Number($("#fAnz").value)||1)),sch=Math.max(1,Number($("#fSchuss").value)||5),mr=Math.max(1,Number($("#fMaxRing").value)||10),lb=$("#fLabel").value.trim()||"Serie";
+      serien=Array.from({length:n},(_,i)=>({label:lb+" "+(i+1),schuss:sch,maxRing:mr}))}
+    else serien=PROGRAMME[prog].serien;
+    const alt=b&&b.serien?JSON.stringify(b.serien):null;
+    const hatErg=b&&Object.values(S.ergebnisse).some(r=>r.bewerbId===b.id);
+    if(hatErg&&alt!==JSON.stringify(serien)&&serien.length!==b.serien.length){toast("Programm mit anderer Serienanzahl kann nach erfassten Ergebnissen nicht geändert werden.");return}
+    const modus=$("#fModus").value;
+    const o={...(b||{id:uid(),teilnehmer:[],erstellt:new Date().toISOString()}),name,programm:prog,serien,
+      start:$("#fStart").value,ende:$("#fEnde").value,jahr:$("#fJahr").value,status:$("#fStatus").value,zehntel:false,
+      modus,maxAntritte:$("#fMaxA").value,umlauf:modus!=="best"||!!$("#fEnde").value||!!$("#fMaxA").value&&$("#fMaxA").value!=="1",
+      kategorie:$("#fKat").value.trim(),leiter:$("#fLeiter").value.trim(),schuetzenmeister:$("#fSM").value.trim(),team:$("#fTeam").value.trim(),beschreibung:$("#fBeschr").value,waffg:$("#fWaffG").checked,
+      interFallback:$("#fInter").checked,s4:$("#fS4").checked,minHinweis:$("#fMin").checked};
+    put("bewerbe",o);UI.bewerbId=o.id;UI.tab=b?"einstellungen":"teilnehmer";render();toast(b?"Gespeichert.":"Bewerb angelegt – jetzt Teilnehmer melden.");
+  });
+}
+
+
+/* ================= Offline-App (PWA) ================= */
+const APP_VERSION="2bb0967a";
+if("serviceWorker" in navigator&&location.protocol.startsWith("http")){
+  window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").then(r=>{
+    r.addEventListener("updatefound",()=>{const n=r.installing;n&&n.addEventListener("statechange",()=>{if(n.state==="installed"&&navigator.serviceWorker.controller)toast("Neue App-Version geladen – beim nächsten Öffnen aktiv.")})})
+  }).catch(()=>{}))}
+try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+/* ================= Start ================= */
+try{document.getElementById("kopfLogo").src=VEREIN.logo}catch(e){}
+document.getElementById("brand").onclick=()=>{UI.view="bewerbe";UI.bewerbId=null;location.hash="bewerbe";render()};
+loadLocal();
+const h=(location.hash||"").slice(1);if(["bewerbe","schuetzen","daten"].includes(h))UI.view=h;
+window.addEventListener("hashchange",()=>{const h=location.hash.slice(1);if(["bewerbe","schuetzen","daten"].includes(h)&&h!==UI.view){UI.view=h;UI.bewerbId=null;render()}});
+render();
+initDb();
+</script>
+</body>
+</html>
