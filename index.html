@@ -109,9 +109,9 @@ tr.click{cursor:pointer} tr.click:hover{background:var(--accsoft)}
 <script>
 "use strict";
 /* ================= Grunddaten ================= */
-const COLLS=["bewerbe","schuetzen","ergebnisse"];
+const COLLS=["bewerbe","schuetzen","ergebnisse","geloescht"]; // geloescht = Lösch-Markierungen für den Abgleich
 const LK="ksv_bewerbe_v1";
-const S={bewerbe:{},schuetzen:{},ergebnisse:{}};
+const S={bewerbe:{},schuetzen:{},ergebnisse:{},geloescht:{}};
 let backend="local", db=null, downloads=null;
 const UI={view:"bewerbe",bewerbId:null,tab:"wertung",filter:"gesamt",schuetzeEdit:null,erfassSid:null,editErg:null,suche:"",erfMode:"serie",dg:null,dgSerie:null};
 
@@ -156,18 +156,78 @@ const queue={};
 function dbWrite(path,fn){const p=(queue[path]||Promise.resolve()).then(fn).catch(e=>{
   const c=e&&e.code;toast(c==="quota_exceeded"?"Speicher voll – bitte alte Daten exportieren/löschen.":"Speichern fehlgeschlagen ("+(c||"Fehler")+")");});
   queue[path]=p;return p}
-function put(coll,obj){
-  obj.geaendert=new Date().toISOString();
+let batch=false; // beim Abgleich: erst am Ende speichern/neu zeichnen
+function put(coll,obj,zeitBehalten){
+  if(!zeitBehalten||!obj.geaendert)obj.geaendert=new Date().toISOString();
   S[coll][obj.id]=JSON.parse(JSON.stringify(obj));
   if(backend==="db") dbWrite(coll+"/"+obj.id,()=>db.collection(coll).doc(obj.id).set(S[coll][obj.id]));
-  else saveLocal();
-  render(true);
+  else if(!batch) saveLocal();
+  if(!batch) render(true);
 }
-function del(coll,id){
+function delRaw(coll,id){
   delete S[coll][id];
   if(backend==="db") dbWrite(coll+"/"+id,()=>db.collection(coll).doc(id).delete());
-  else saveLocal();
-  render(true);
+  else if(!batch) saveLocal();
+  if(!batch) render(true);
+}
+function del(coll,id){
+  if(coll!=="geloescht"){const z=new Date().toISOString(),t={id:coll+"~"+id,coll,rid:id,zeit:z,geaendert:z};
+    const ob=batch;batch=true;put("geloescht",t,true);batch=ob;}
+  delRaw(coll,id);
+}
+/* ================= Abgleich zwischen Geräten ================= */
+const zeitVon=o=>(o&&(o.geaendert||o.erstellt))||"";
+const personKey=p=>[(p.nachname||"").trim().toLowerCase(),(p.vorname||"").trim().toLowerCase(),String(p.geburtsjahr||"").trim()].join("|");
+function geraetName(){try{return localStorage.getItem("ksv_geraet")||""}catch(e){return ""}}
+function abgleichDaten(){return {app:"ksv-bewerbe",version:2,typ:"abgleich",geraet:geraetName(),exportiert:new Date().toISOString(),...S}}
+function abgleich(data){
+  if(!data||data.app!=="ksv-bewerbe")throw new Error("keine KSV-Bewerbe-Datei");
+  const st={neu:0,akt:0,del:0,pers:0};
+  const tot=(coll,id)=>{const t=S.geloescht[coll+"~"+id];return t?t.zeit:""};
+  batch=true;
+  try{
+    // 1. Löschungen vom anderen Gerät übernehmen
+    Object.values(data.geloescht||{}).forEach(t=>{
+      if(!t||!t.id||!t.rid||!COLLS.includes(t.coll)||t.coll==="geloescht")return;
+      const mein=S.geloescht[t.id];if(!mein||mein.zeit<t.zeit)put("geloescht",{...t},true);
+      const loc=S[t.coll][t.rid];if(loc&&zeitVon(loc)<=t.zeit){delRaw(t.coll,t.rid);st.del++}
+    });
+    // 2. Personen (gleiche Person mit anderer ID wird zusammengeführt)
+    const map={};
+    Object.values(data.schuetzen||{}).forEach(p=>{
+      if(!p||!p.id)return;const t=tot("schuetzen",p.id);if(t&&t>=zeitVon(p))return;
+      const loc=S.schuetzen[p.id];
+      if(loc){if(zeitVon(p)>zeitVon(loc)){put("schuetzen",{...p},true);st.akt++}return}
+      const bekannt=Object.values(S.schuetzen).find(x=>(x.alias||[]).includes(p.id)); // schon früher zusammengeführt
+      if(bekannt){map[p.id]=bekannt.id;if(zeitVon(p)>zeitVon(bekannt)){put("schuetzen",{...p,id:bekannt.id,alias:bekannt.alias},true);st.akt++}return}
+      const dup=Object.values(S.schuetzen).find(x=>personKey(x)===personKey(p));
+      if(dup){map[p.id]=dup.id;st.pers++;const alias=[...new Set([...(dup.alias||[]),p.id])];
+        put("schuetzen",zeitVon(p)>zeitVon(dup)?{...p,id:dup.id,alias}:{...dup,alias},true);return}
+      put("schuetzen",{...p},true);st.neu++;
+    });
+    const mid=id=>map[id]||id;
+    const tnVereint=(alt,neu)=>{const m={};(alt||[]).forEach(t=>m[t.sid]=t);(neu||[]).forEach(t=>m[t.sid]=t);return Object.values(m)};
+    // 3. Bewerbe (Felder: neuerer Stand gewinnt; Teilnehmerlisten werden vereint)
+    Object.values(data.bewerbe||{}).forEach(b=>{
+      if(!b||!b.id)return;const t=tot("bewerbe",b.id);if(t&&t>=zeitVon(b))return;
+      const tn=(b.teilnehmer||[]).map(x=>({...x,sid:mid(x.sid)}));
+      const loc=S.bewerbe[b.id];
+      if(!loc){put("bewerbe",{...b,teilnehmer:tnVereint([],tn)},true);st.neu++;return}
+      const neuer=zeitVon(b)>zeitVon(loc);
+      const basis=neuer?{...b}:{...loc};
+      basis.teilnehmer=neuer?tnVereint(loc.teilnehmer,tn):tnVereint(tn,loc.teilnehmer);
+      const tnNeu=basis.teilnehmer.length!==(loc.teilnehmer||[]).length;
+      if(neuer||tnNeu){put("bewerbe",basis,true);st.akt++}
+    });
+    // 4. Ergebnisse (jede Zeile eines Durchgangs einzeln: neuerer Stand gewinnt)
+    Object.values(data.ergebnisse||{}).forEach(r=>{
+      if(!r||!r.id)return;const t=tot("ergebnisse",r.id);if(t&&t>=zeitVon(r))return;
+      const rr={...r,sid:r.sid?mid(r.sid):""};const loc=S.ergebnisse[r.id];
+      if(!loc){put("ergebnisse",rr,true);st.neu++}else if(zeitVon(r)>zeitVon(loc)){put("ergebnisse",rr,true);st.akt++}
+    });
+  }finally{batch=false;if(backend!=="db")saveLocal();render(true)}
+  try{localStorage.setItem("ksv_letzter_abgleich",JSON.stringify({zeit:new Date().toISOString(),von:data.geraet||"",datei:data.exportiert||""}))}catch(e){}
+  return st;
 }
 async function initDb(){
   if(!window.claude||!window.claude.use){return}
@@ -284,7 +344,7 @@ document.querySelectorAll("header nav button").forEach(bt=>bt.onclick=()=>{UI.vi
 document.addEventListener("input",e=>{if(e.target&&e.target.id&&e.target.closest&&e.target.closest("#app"))e.target.dataset.dirty="1"});
 function clearDirty(){document.querySelectorAll("#app [data-dirty]").forEach(e=>delete e.dataset.dirty)}
 function render(keepInputs){
-  const dirty={};if(keepInputs)document.querySelectorAll("#app [data-dirty='1']").forEach(e=>{if(e.id&&e.tagName!=="SELECT"&&e.type!=="checkbox")dirty[e.id]=e.value});
+  const dirty={};if(keepInputs)document.querySelectorAll("#app [data-dirty='1']").forEach(e=>{if(e.id&&e.tagName!=="SELECT"&&e.type!=="checkbox"&&e.type!=="file")dirty[e.id]=e.value});
   document.querySelectorAll("header nav button").forEach(bt=>bt.classList.toggle("on",bt.dataset.v===UI.view));
   const a=$("#app");
   const fa=document.activeElement; const keep=fa&&fa.id?{id:fa.id,ss:fa.selectionStart,se:fa.selectionEnd}:null;
@@ -518,7 +578,7 @@ function vTeilnehmer(b){
 }
 
 function vBewerbForm(b){
-  const n=!b;b=b||{name:"",programm:"3030voll",start:today(),ende:"",modus:"sum",bestN:2,maxAntritte:"",umlauf:false,zehntel:false,interFallback:true,minHinweis:true,s4:true,status:"offen",serien:PROGRAMME["3030voll"].serien,jahr:""};
+  const n=!b;b=b||{name:"",programm:"frei",start:today(),ende:"",modus:"sum",bestN:2,maxAntritte:"",umlauf:false,zehntel:false,interFallback:true,minHinweis:true,s4:true,status:"offen",serien:Array.from({length:4},(_,i)=>({label:"Serie "+(i+1),schuss:5,maxRing:10})),jahr:""};
   const ser=b.serien||[];
   return `<div class="card"><h3 style="margin-top:0">${n?"Neuer Bewerb":"Einstellungen"}</h3>
   <div class="row"><div style="flex:2 1 300px"><label>Name des Bewerbs</label><input id="fName" value="${esc(b.name)}" placeholder="z. B. KSV Herbst-Umlaufbewerb 2026"></div>
@@ -568,13 +628,15 @@ function vDaten(){
   <div class="card"><p>Speicherort: <b>${backend==="db"?"Cloud (geteilt zwischen allen Geräten, die diese Seite öffnen)":"Nur dieser Browser (lokal)"}</b></p>
   <p class="small muted">${n[0]} Bewerbe · ${n[1]} Personen · ${n[2]} Ergebnisse</p>
   ${backend==="db"&&localHasData()?`<div class="info">In diesem Browser liegen noch lokal gespeicherte Daten. <button class="b sm" id="migr">In die Cloud übernehmen</button></div>`:""}
-  ${window.matchMedia&&matchMedia("(display-mode: standalone)").matches||navigator.standalone?`<div class="info">Offline-App (Version ${APP_VERSION}) – alle Daten liegen nur auf diesem Gerät. Bitte nach jedem Schießtag eine Sicherung erstellen.</div>`:""}
-  <h3>Sicherung exportieren</h3>
-  <p class="small muted">Für Bewerbe über mehrere Monate empfiehlt sich regelmäßig eine Sicherungsdatei (JSON).</p>
-  <div class="flex"><button class="b" id="expJson">Sicherung herunterladen</button><button class="b g" id="cpJson">Sicherung in Zwischenablage</button></div>
-  <h3>Sicherung importieren</h3>
-  <p class="small muted">Datensätze mit gleicher ID werden überschrieben, alle anderen bleiben erhalten.</p>
-  <input type="file" id="impFile" accept=".json,application/json" style="max-width:360px">
+  <h3>Abgleich mit anderen Geräten &amp; Sicherung</h3>
+  <p class="small muted">Eine Abgleich-Datei enthält alle Daten dieses Geräts inkl. Löschungen – sie ist gleichzeitig deine Sicherung.
+  Beim Laden wird zusammengeführt: Neues kommt dazu, bei Änderungen gewinnt der <b>neuere</b> Stand, Gelöschtes wird auch hier gelöscht, gleiche Personen werden nicht doppelt angelegt. Es geht nichts verloren.</p>
+  <div class="row"><div style="flex:0 1 260px"><label>Name dieses Geräts (erscheint im Dateinamen)</label><input id="geraetName" value="${esc(geraetName())}" placeholder="z. B. iPad Roman"></div></div>
+  ${(()=>{try{const l=JSON.parse(localStorage.getItem("ksv_letzter_abgleich")||"null");return l?`<p class="small">Letzter Abgleich: <b>${new Date(l.zeit).toLocaleString("de-AT")}</b>${l.von?` mit „${esc(l.von)}“`:""}</p>`:""}catch(e){return ""}})()}
+  <div class="flex" style="margin-top:8px"><button class="b" id="expJson">⬆ Abgleich-Datei erstellen</button><button class="b g" id="cpJson">In Zwischenablage</button></div>
+  <div style="margin-top:12px"><label>⬇ Abgleich-Datei vom anderen Gerät laden</label><input type="file" id="impFile" accept=".json,application/json" style="max-width:360px"></div>
+  <p class="small muted" style="margin-top:8px"><b>So geht’s:</b> Gerät A „Abgleich-Datei erstellen“ → Datei per AirDrop, Mail oder Google Drive an Gerät B → dort laden. Danach umgekehrt (B erstellen → A laden), dann haben beide denselben Stand.
+  Tipp: Einen gemeinsamen Bewerb nur auf <b>einem</b> Gerät anlegen und zuerst abgleichen – erst dann auf beiden erfassen.</p>
   <h3>Personen per CSV importieren</h3>
   <p class="small muted">Spalten: Nachname;Vorname;Geburtsjahr;Geschlecht (m/w/x);Verein – eine Person pro Zeile.</p>
   <textarea id="csvP" rows="4" placeholder="Muster;Max;1972;m;KSV Siemens"></textarea>
@@ -1024,10 +1086,19 @@ function bind(){
   on("sNeu","click",()=>schuetzeDialog(null));
   onAll("[data-editsch]","click",e=>schuetzeDialog(S.schuetzen[e.dataset.editsch]));
   // Daten
-  on("expJson","click",()=>anbieten(`KSV_Bewerbe_Sicherung_${today()}.json`,JSON.stringify({app:"ksv-bewerbe",version:1,exportiert:new Date().toISOString(),...S},null,1),"application/json"));
-  on("cpJson","click",()=>kopieren(JSON.stringify({app:"ksv-bewerbe",version:1,...S})));
-  on("impFile","change",e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const j=JSON.parse(rd.result);let n=0;
-    COLLS.forEach(k=>Object.values(j[k]||{}).forEach(o=>{if(o&&o.id){put(k,o);n++}}));toast(n+" Datensätze importiert.")}catch(x){toast("Datei konnte nicht gelesen werden.")}};rd.readAsText(f)});
+  on("geraetName","change",e=>{try{localStorage.setItem("ksv_geraet",e.target.value.trim())}catch(x){}toast("Gerätename gespeichert.")});
+  on("expJson","click",()=>{const g=(geraetName()||"Geraet").replace(/[^\wäöüÄÖÜß-]+/g,"_");const d=new Date(),p=n=>String(n).padStart(2,"0");
+    anbieten(`KSV_Abgleich_${g}_${today()}_${p(d.getHours())}-${p(d.getMinutes())}.json`,JSON.stringify(abgleichDaten(),null,1),"application/json")});
+  on("cpJson","click",()=>kopieren(JSON.stringify(abgleichDaten())));
+  on("impFile","change",e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{
+    let j;try{j=JSON.parse(rd.result)}catch(x){toast("Datei konnte nicht gelesen werden.");return}
+    try{const s=abgleich(j);
+      modal(`<h3 style="margin-top:0">Abgleich abgeschlossen ✓</h3><p>${j.geraet?`Datei von „${esc(j.geraet)}“${j.exportiert?" vom "+new Date(j.exportiert).toLocaleString("de-AT"):""}`:"Datei geladen"}.</p>
+        <table><tbody><tr><td>Neu übernommen</td><td class="n"><b>${s.neu}</b></td></tr><tr><td>Aktualisiert (neuerer Stand)</td><td class="n"><b>${s.akt}</b></td></tr>
+        <tr><td>Gelöscht (wie am anderen Gerät)</td><td class="n"><b>${s.del}</b></td></tr><tr><td>Gleiche Personen zusammengeführt</td><td class="n"><b>${s.pers}</b></td></tr></tbody></table>
+        <p class="small muted">Damit das andere Gerät auch deinen Stand hat: hier „Abgleich-Datei erstellen“ und dort laden.</p><div class="right"><button class="b" id="abgOk">OK</button></div>`,()=>{$("#abgOk").onclick=closeModal});
+    }catch(x){console.error(x);toast("Abgleich fehlgeschlagen: "+(x.message||"unbekannter Fehler"))}
+    e.target.value=""};rd.readAsText(f)});
   on("csvPImp","click",()=>{const t=$("#csvP").value.trim();if(!t)return;let n=0;
     t.split(/\r?\n/).forEach(l=>{const c=l.split(/[;\t]/).map(x=>x.trim());if(!c[0]||/^nachname$/i.test(c[0]))return;
       const g=(c[3]||"m").toLowerCase();put("schuetzen",{id:uid(),nachname:c[0],vorname:c[1]||"",geburtsjahr:c[2]||"",geschlecht:g.startsWith("w")||g.startsWith("f")?"w":g.startsWith("x")||g.startsWith("d")||g.startsWith("i")?"x":"m",verein:c[4]||""});n++});
@@ -1065,7 +1136,7 @@ function bindForm(b){
 
 
 /* ================= Offline-App (PWA) ================= */
-const APP_VERSION="e845b811";
+const APP_VERSION="534d96d7";
 if("serviceWorker" in navigator&&location.protocol.startsWith("http")){
   window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").then(r=>{
     r.addEventListener("updatefound",()=>{const n=r.installing;n&&n.addEventListener("statechange",()=>{if(n.state==="installed"&&navigator.serviceWorker.controller)toast("Neue App-Version geladen – beim nächsten Öffnen aktiv.")})})
