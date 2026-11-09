@@ -303,6 +303,17 @@ function xSumme(r){return (r.xs||[]).reduce((a,v)=>a+(Number(v)||0),0)}
 function minSerie(se){return (Number(se.schuss)||5)*Math.min(0,Number(se.minRing)||0)}
 function maxSerie(se){return (Number(se.schuss)||5)*(Number(se.maxRing)||10)}
 function maxGesamt(b){return (b.serien||[]).reduce((a,s)=>a+maxSerie(s),0)}
+/* Reihung bei Punktegleichstand: Anzahl X, dann 10er, dann 9er … (aus den Einzelschüssen) */
+function trefferVektor(b,r){
+  const c=trefferZaehlen(b,r),xs=xSumme(r);if(!c)return [xs];
+  const mx=Math.max(10,...(b.serien||[]).map(s=>Number(s.maxRing)||10));
+  return [xs,...Array.from({length:mx},(_,i)=>c[String(mx-i)]||0)];
+}
+function vektorCmp(a,b){const n=Math.max(a.length,b.length);for(let i=0;i<n;i++){const d=(b[i]||0)-(a[i]||0);if(d)return d}return 0}
+function vektorText(b,a,o){ // "Mehr X", "Mehr 9er", … für die Anmerkung
+  const mx=Math.max(10,...(b.serien||[]).map(s=>Number(s.maxRing)||10));const n=Math.max(a.length,o.length);
+  for(let i=0;i<n;i++){const d=(a[i]||0)-(o[i]||0);if(d){const w=i===0?"X":(mx-i+1)+"er";return (d>0?"Mehr ":"Weniger ")+w}}return "Gleichstand";
+}
 function tiebreakCmp(a,b){ // a,b Serienarrays – FFWGK 8.2.1: Summe der letzten beiden Serien, dann davor ...
   const n=Math.max(a.length,b.length);
   for(let i=n-1;i>=0;i-=2){
@@ -323,7 +334,7 @@ function auswertung(b,kal){
   const rows=[];
   Object.keys(per).forEach(sid=>{
     const list=per[sid].sort((x,y)=>(x.datum||"").localeCompare(y.datum||"")||(x.erstellt||"").localeCompare(y.erstellt||""));
-    const sorted=[...list].sort((x,y)=>y.total-x.total||xSumme(y)-xSumme(x)||tiebreakCmp(x.serien,y.serien));
+    const sorted=[...list].sort((x,y)=>y.total-x.total||vektorCmp(trefferVektor(b,x),trefferVektor(b,y)));
     let wert,zaehlt;
     switch(MODUS){
       case "bestN":{const n=Math.max(1,Number(b.bestN)||2);zaehlt=sorted.slice(0,n);wert=zaehlt.reduce((a,r)=>a+r.total,0);break}
@@ -335,17 +346,18 @@ function auswertung(b,kal){
     const tb=MODUS==="last"?zaehlt[0].serien:sorted[0].serien;
     const xs=MODUS==="best"?xSumme(sorted[0]):MODUS==="last"?xSumme(zaehlt[0]):zaehlt.reduce((a,r)=>a+xSumme(r),0);
     const s=S.schuetzen[sid];
-    rows.push({sid,s,wert,tb,xs,antritte:list.length,bestes:sorted[0].total,zaehlt,klasse:klasseVon(b,sid),
+    const tv=trefferVektor(b,MODUS==="last"?zaehlt[0]:sorted[0]);
+    rows.push({sid,s,wert,tb,xs,tv,antritte:list.length,bestes:sorted[0].total,zaehlt,klasse:klasseVon(b,sid),
       geschlecht:s?s.geschlecht:"m",gast:!!(teilnahme(b,sid)||{}).gast,
       unvollstaendig:MODUS==="bestN"&&list.length<(Number(b.bestN)||2)});
   });
-  rows.sort((x,y)=>y.wert-x.wert||y.xs-x.xs||tiebreakCmp(x.tb,y.tb)||sName(x.s).localeCompare(sName(y.s)));
+  rows.sort((x,y)=>y.wert-x.wert||vektorCmp(x.tv,y.tv)||sName(x.s).localeCompare(sName(y.s)));
   return rows;
 }
 function rangiere(rows){
   let last=null,rang=0;
   return rows.map((r,i)=>{
-    if(!last||r.wert!==last.wert||r.xs!==last.xs||tiebreakCmp(r.tb,last.tb)!==0)rang=i+1;
+    if(!last||r.wert!==last.wert||vektorCmp(r.tv||[r.xs],last.tv||[last.xs])!==0)rang=i+1;
     last=r;return {...r,rang};
   });
 }
@@ -433,7 +445,7 @@ function vWertung(b){
   else if(f==="klassen")klassenVorh.forEach(k=>{const r=all.filter(x=>x.klasse===k);html+=tbl(r,KLASSEN[k],k==="G"?"":wertbar(r))});
   else {const k=f.slice(2);const r=all.filter(x=>x.klasse===k);html+=tbl(r,KLASSEN[k],k==="G"?"":wertbar(r))}
   html+=`<div class="right"><button class="b" id="xlsxListe">📊 Ergebnisliste als Excel</button><button class="b g" id="csvWertung">CSV</button><button class="b g" id="txtWertung">Text kopieren</button></div>
-  <p class="small muted">Reihung bei Ringgleichheit: 1. mehr X (Innenzehner), 2. Summe der beiden letzten Serien (20-s-Serien), dann der beiden davor usw. (FFWGK 8.2.1).</p>`;
+  <p class="small muted">Reihung bei Punktegleichstand: 1. mehr X (Innenzehner), 2. mehr 10er, 3. mehr 9er usw. Sind alle gleich, teilen sich die Schützen den Rang.</p>`;
   return html;
 }
 
@@ -743,13 +755,13 @@ function listeDaten(b,kal){
   const rows=rangiere(auswertung(b,kal));
   const maxDG=Math.max(1,...rows.map(r=>r.antritte));
   const chrono=sid=>Object.values(S.ergebnisse).filter(r=>r.bewerbId===b.id&&r.sid===sid&&komplett(b,r)&&(kal===undefined||(r.kal||"")===kal)).sort((x,y)=>(x.datum||"").localeCompare(y.datum||"")||(x.erstellt||"").localeCompare(y.erstellt||""));
-  const note=(a,o)=>a.xs!==o.xs?(a.xs>o.xs?"Mehr X":"Weniger X"):(()=>{const c=tiebreakCmp(a.tb,o.tb);return c<0?"Bessere Schlussserien":c>0?"Schwächere Schlussserien":"Gleichstand"})();
+  const note=(a,o)=>vektorText(b,a.tv||[a.xs],o.tv||[o.xs]);
   rows.forEach((r,i)=>{
     r.dgs=chrono(r.sid);
-    let bi=0;r.dgs.forEach((e,k)=>{const be=r.dgs[bi];if(e.total>be.total||(e.total===be.total&&xSumme(e)>xSumme(be)))bi=k});r.bestIdx=bi;
+    let bi=0;r.dgs.forEach((e,k)=>{const be=r.dgs[bi];if(e.total>be.total||(e.total===be.total&&vektorCmp(trefferVektor(b,e),trefferVektor(b,be))<0))bi=k});r.bestIdx=bi;
     const anm=[];const pre=r.dgs.length>1?`DG${bi+1}: `:"";
     const prev=rows[i-1],next=rows[i+1];
-    if(prev&&prev.wert===r.wert)anm.push(pre+note(r,prev));else if(next&&next.wert===r.wert)anm.push(pre+note(r,next));
+    if(next&&next.wert===r.wert)anm.push(pre+note(r,next));else if(prev&&prev.wert===r.wert)anm.push(pre+note(r,prev));
     r.dgs.forEach((e,k)=>{if(e.notiz)anm.push((r.dgs.length>1?`DG${k+1}: `:"")+e.notiz)});
     r.anm=anm.join("; ");
   });
@@ -828,7 +840,7 @@ ${team.length?`<h2 class="sec">Wettkampfleiterteam</h2>${team.map(t=>`<div class
 <table class="d"><thead><tr><th colspan="${L.maxDG+5}" class="c">${esc(kat)}</th></tr><tr><th>Rang</th><th>Name</th>${dgCols}<th class="c">${wertKopf(b)}</th><th class="c">X</th><th>Anmerkung</th></tr></thead>
 <tbody>${L.rows.map(zeile).join("")}</tbody></table>
 <table class="leg"><tr><td>DG</td><td>Durchgang</td></tr><tr><td>---</td><td>Kein weiterer Durchgang absolviert</td></tr><tr><td><u>123</u></td><td>Unterstrichen = bestes Ergebnis aus den Durchgängen</td></tr><tr><td>X</td><td>Innenzehner</td></tr></table>
-<h2 style="font-size:14pt;margin:16px 0 2px"><u>Hinweis</u>:</h2><p>Bei Punktegleichstand entscheidet die Anzahl der X (Innenzehner), danach die Summe der letzten beiden Serien, dann der beiden davor usw.</p></td></tr></tbody></table>
+<h2 style="font-size:14pt;margin:16px 0 2px"><u>Hinweis</u>:</h2><p>Bei Punktegleichstand entscheidet die Anzahl der X (Innenzehner), danach die Anzahl der 10er, danach der 9er usw.</p></td></tr></tbody></table>
 
 ${L.klassen.length>1?`<table class="lay"><thead><tr><td><div class="sp-k"></div></td></tr></thead><tfoot><tr><td><div class="sp-f"></div></td></tr></tfoot><tbody><tr><td><h2 class="sec">Wertung nach Klassen</h2>${L.klassen.map(kl=>`<table class="d" style="min-width:120mm"><thead><tr><th colspan="5" class="c">${esc(KLASSEN[kl.k])}</th></tr><tr><th>Rang</th><th>Name</th><th>Verein</th><th class="c">${wertKopf(b)}</th><th class="c">X</th></tr></thead><tbody>${kl.rows.map((r,i)=>`<tr class="${i%2?"":"alt"}"><td class="c">${r.rang}</td><td>${esc(sName(r.s))}</td><td>${esc(r.s?.verein||"")}</td><td class="c">${num(r.wert,MODUS==="avg")}</td><td class="c">${r.xs||0}</td></tr>`).join("")}</tbody></table>`).join("")}</td></tr></tbody></table>`:""}
 <table class="lay"><thead><tr><td><div class="sp-k"></div></td></tr></thead><tfoot><tr><td><div class="sp-f"></div></td></tr></tfoot><tbody><tr><td><h2 class="sec">Trefferdetailauswertung</h2>
@@ -941,7 +953,7 @@ function excelListe(b){
   R.push([{v:"DG",s:10},{v:"Durchgang",s:10}]);R.push([{v:"---",s:10},{v:"Kein weiterer Durchgang absolviert",s:10}]);
   R.push([{v:"123",s:10},{v:"Unterstrichen = bestes Ergebnis aus den Durchgängen",s:10}]);R.push([{v:"X",s:10},{v:"Innenzehner",s:10}]);
   if(mitKal){R.push([{v:"GK / KK",s:10},{v:"Großkaliber / Kleinkaliber – getrennte Wertung",s:10}])}
-  R.push([]);R.push([{v:"Hinweis:",s:11}]);R.push([{v:"Bei Punktegleichstand entscheidet die Anzahl der X (Innenzehner), danach die Summe der letzten beiden Serien, dann der beiden davor usw.",s:0}]);
+  R.push([]);R.push([{v:"Hinweis:",s:11}]);R.push([{v:"Bei Punktegleichstand entscheidet die Anzahl der X (Innenzehner), danach die Anzahl der 10er, danach der 9er usw.",s:0}]);
   const sh1={name:"Ergebnisliste",rows:R,merges:M,heights:H,autor:b.leiter,cols:[7,30,...Array(maxDG).fill(9),11,6,34]};
   // Blatt 2: Klassen (je Kaliber)
   const R2=[[{v:"Wertung nach Klassen – "+b.name,s:1}],[]],M2=[];
@@ -1194,7 +1206,7 @@ function bindForm(b){
 
 
 /* ================= Offline-App (PWA) ================= */
-const APP_VERSION="0dbc112f";
+const APP_VERSION="4e4fc209";
 if("serviceWorker" in navigator&&location.protocol.startsWith("http")){
   window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").then(r=>{
     r.addEventListener("updatefound",()=>{const n=r.installing;n&&n.addEventListener("statechange",()=>{if(n.state==="installed"&&navigator.serviceWorker.controller)toast("Neue App-Version geladen – beim nächsten Öffnen aktiv.")})})
