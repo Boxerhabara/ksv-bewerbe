@@ -26,11 +26,14 @@ body{margin:0;font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-seri
 header{background:var(--acc2);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;position:sticky;top:0;z-index:5}
 header h1{font-size:18px;margin:0;font-weight:650;letter-spacing:.2px}
 .logo{height:52px;width:52px;border-radius:50%;background:#fff;object-fit:cover;object-position:center;transform:scale(1);padding:0;box-shadow:0 1px 4px rgba(0,0,0,.25);flex:0 0 auto}
+header .brandtxt{display:flex;align-items:center;gap:12px}
 header .brand{display:flex;align-items:center;gap:10px;cursor:pointer}
 @media (max-width:560px){.logo{height:38px;width:38px}header h1{font-size:16px}}
-header nav{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
-header nav button{background:transparent;color:#fff;border:1px solid transparent;padding:6px 12px;border-radius:8px;cursor:pointer;font:inherit}
-header nav button.on{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.3)}
+header nav{display:flex;gap:4px;flex-wrap:nowrap;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
+header .navbtn{margin-left:auto}
+header nav button,header .navbtn{background:transparent;color:#fff;border:1px solid transparent;padding:6px 12px;border-radius:8px;cursor:pointer;font:inherit}
+header nav button.on,header .navbtn.on{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.3)}
+@media (max-width:1000px){header h1{font-size:16px}header .brandtxt{flex-direction:column;align-items:flex-start;gap:3px}header nav>button,header .navbtn{padding:6px 10px}}
 .badge{font-size:12px;padding:2px 8px;border-radius:99px;background:rgba(255,255,255,.18)}
 main{max-width:1150px;margin:0 auto;padding:16px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:14px}
@@ -66,12 +69,17 @@ button.sm{padding:4px 10px;font-size:13px}
 button:disabled{opacity:.5;cursor:default}
 table{width:100%;border-collapse:collapse;font-size:14px}
 th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+.schtab th,.schtab td{padding:7px 5px}.schtab .sortth{letter-spacing:.2px}
 .sortth{cursor:pointer;user-select:none;white-space:nowrap}.sortth:hover{color:var(--acc)}.sortpfeil{font-size:11px;opacity:.8}.cbcol{width:36px;text-align:center}.cbcol input{width:20px;height:20px;cursor:pointer;margin:0}.selbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px;padding:8px 10px;border:1px solid var(--acc);border-radius:8px}
 th{font-size:12px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);font-weight:600}
 td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 tr.click{cursor:pointer} tr.click:hover{background:var(--accsoft)}
 .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:4px 0 14px;flex-wrap:wrap}
-.tabs button{font:inherit;background:none;border:none;padding:9px 14px;cursor:pointer;color:var(--muted);border-bottom:3px solid transparent}
+.tabs button{font:inherit;background:none;border:none;padding:9px 10px;white-space:nowrap;cursor:pointer;color:var(--muted);border-bottom:3px solid transparent}
+.tabs button[data-tab="einstellungen"]{margin-left:auto}
+.tabs button:not([data-tab="einstellungen"]){margin-right:12px}
+@media (max-width:1000px){.tabs{gap:0}.tabs button{padding:9px 6px;font-size:14.5px}.tabs button:not([data-tab="einstellungen"]){margin-right:4px}.tabs button[data-tab="einstellungen"] .tabtxt{display:none}.tabs button[data-tab="einstellungen"] .tabico{margin-right:0;width:1.35em;height:1.35em}.tabico{margin-right:4px}}
+.tabico{width:1.15em;height:1.15em;vertical-align:-.2em;margin-right:5px}
 .tabs button.on{color:var(--acc);border-bottom-color:var(--acc);font-weight:600}
 .chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
 .chip{font:inherit;font-size:13px;padding:5px 11px;border-radius:99px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
@@ -106,19 +114,23 @@ tr.click{cursor:pointer} tr.click:hover{background:var(--accsoft)}
 .list-pick div:hover{background:var(--accsoft)}
 .tw{overflow-x:auto}
 .ser-small{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.uhrcard{text-align:center;padding:24px 12px;display:flex;flex-direction:column;align-items:center}.uhrcard>*{width:100%}.uhranz{font-size:min(165px,calc((100vw - 90px)/6.6));font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:2px;line-height:1.2;margin:34px 0 10px;color:var(--ink)}.uhrz{font-size:.45em;color:var(--muted)}.uhrknoepfe{display:flex;gap:14px;justify-content:center;align-items:center;margin:14px auto 0;width:100%}.uhrknoepfe .b.uhrbtn{font-size:22px;padding:16px 26px;min-width:180px;font-weight:600}.uhrende .uhranz{color:#c62828}.uhrfertig{font-size:24px;font-weight:700;color:#c62828;margin-bottom:6px}
+body.mituhr main{padding-bottom:90px}.uhroptitel{margin-top:140px;padding-top:14px;border-top:1px solid var(--line);font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}.uhrsound{display:flex;gap:28px;justify-content:center;margin-top:10px;flex-wrap:wrap}.uhrsound label{display:flex;align-items:center;gap:10px;font-size:17px;cursor:pointer;margin:0}.uhrsound input{width:24px;height:24px;margin:0;accent-color:var(--acc)}
+#uhrMini{position:fixed;right:16px;bottom:16px;z-index:15;display:flex;align-items:center;gap:10px;background:var(--acc2);color:#fff;border:none;border-radius:14px;padding:10px 18px;box-shadow:0 4px 16px rgba(0,0,0,.25);cursor:pointer;font:inherit}#uhrMini[hidden]{display:none}#uhrMini .tabico{width:26px;height:26px;margin:0}#uhrMini .mlab{font-size:13px;opacity:.85}#uhrMini .mzeit{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums}#uhrMini .mzeit .uhrz{color:rgba(255,255,255,.75)}#uhrMini.pause{background:#5d6f76}#uhrMini.ende{background:#c62828;animation:uhrblink 1s infinite}@keyframes uhrblink{50%{opacity:.6}}@media print{#uhrMini{display:none!important}}
+.uhranz.lgelb{color:#e0a800;animation:uhrblink .8s infinite}.uhranz.lrot{color:#c62828;animation:uhrblink .5s infinite}.uhranz.lende{color:#c62828}#uhrMini.gelb{background:#c99700;animation:uhrblink .8s infinite}.uhrcard{position:relative}.uhrhaupt{text-align:center}.uhrtitel{font-size:15px;font-weight:600;color:var(--muted);margin-top:4px}.uhrprog{position:absolute;top:20px;right:14px;display:flex;flex-direction:column;gap:10px;width:auto!important}.ladebtn{display:flex;align-items:center;gap:8px;font:inherit;font-size:17px;font-weight:600;padding:12px 18px;border-radius:999px;border:2px solid #00acc1;background:none;color:#00acc1;cursor:pointer;white-space:nowrap}.ladebtn .tabico{width:1.3em;height:1.3em;margin:0}.ladebtn.on{background:#00acc1;color:#fff}@media (max-width:1000px){.uhrprog{gap:8px;top:16px;right:10px}.ladebtn{font-size:15px;padding:8px 14px}}@media (max-width:640px){.uhrprog{position:static;flex-direction:row;flex-wrap:wrap;justify-content:center;margin-top:14px}}
 </style>
 </head>
 <body>
 <header>
-  <div class="brand" id="brand" title="Zur Bewerbsübersicht"><img class="logo" id="kopfLogo" alt="KSV Logo"><h1>KSV Siemens · Bewerbe</h1></div>
-  <span class="badge" id="mode">Lokal</span>
+  <div class="brand" id="brand" title="Zur Bewerbsübersicht"><img class="logo" id="kopfLogo" alt="KSV Logo"><div class="brandtxt"><h1>KSV Siemens<span class="h1sep"> · </span><span class="h1b">Bewerbe</span></h1><span class="badge" id="mode">Lokal</span></div></div>
   <nav>
     <button data-v="bewerbe">Bewerbe</button>
     <button data-v="schuetzen">Schützen</button>
-    <button data-v="daten">Daten</button>
   </nav>
+  <button class="navbtn" data-v="daten">Daten Import/Export</button>
 </header>
 <main id="app"></main>
+<button id="uhrMini" type="button" hidden></button>
 <div id="toast"></div>
 <div id="modalroot"></div>
 
@@ -131,6 +143,14 @@ const S={bewerbe:{},schuetzen:{},ergebnisse:{},geloescht:{}};
 let backend="local", db=null, downloads=null;
 const UI={view:"bewerbe",bewerbId:null,tab:"wertung",filter:"gesamt",schuetzeEdit:null,erfassSid:null,editErg:null,suche:"",erfMode:"serie",dg:null,dgSerie:null};
 
+const ICO=(()=>{const w=d=>`<svg class="tabico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;return{
+  pokal:w('<path d="M7 3h10v6a5 5 0 0 1-10 0z"/><path d="M7 5H4.5v1.5A3.5 3.5 0 0 0 7.6 10M17 5h2.5v1.5A3.5 3.5 0 0 1 16.4 10"/><path d="M12 14v4M8 21h8M9.5 18h5"/>'),
+  ziel:w('<circle cx="12" cy="12" r="8"/><line x1="12" y1="1.5" x2="12" y2="7"/><line x1="12" y1="17" x2="12" y2="22.5"/><line x1="1.5" y1="12" x2="7" y2="12"/><line x1="17" y1="12" x2="22.5" y2="12"/><circle cx="12" cy="12" r="1" fill="currentColor"/>'),
+  schuetze:w('<circle cx="7.5" cy="6.5" r="3.5"/><path d="M2.5 21v-2.5A5.5 5.5 0 0 1 8 13"/><path d="M14 11.2h7.5v2.6h-4.3l-.8 3.2h-2.4z" fill="currentColor" stroke-width="1.2"/>'),
+  liste:w('<line x1="9" y1="6" x2="21" y2="6"/><line x1="9" y1="12" x2="21" y2="12"/><line x1="9" y1="18" x2="21" y2="18"/><circle cx="4.5" cy="6" r="1" fill="currentColor"/><circle cx="4.5" cy="12" r="1" fill="currentColor"/><circle cx="4.5" cy="18" r="1" fill="currentColor"/>'),
+  uhr:w('<circle cx="12" cy="13.5" r="8"/><path d="M12 9.5v4l2.5 2.5M10 2.5h4M12 2.5v3M19 6l1.5-1.5"/>'),
+  patrone:w('<path d="M9 10V7.5C9 5 10.3 2.5 12 2.5S15 5 15 7.5V10"/><rect x="8.5" y="10" width="7" height="9" rx=".6"/><path d="M7.5 21.5h9M8.5 19.5v2M15.5 19.5v2"/>'),
+  zahnrad:w('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>')}})();
 const KLASSEN={
   F:"Frauen",SW1:"Seniorinnen 1",SW2:"Seniorinnen 2",SW3:"Seniorinnen 3",SW4:"Seniorinnen 4",
   M:"Männer",SM1:"Senioren 1",SM2:"Senioren 2",SM3:"Senioren 3",SM4:"Senioren 4",
@@ -380,14 +400,14 @@ function rangiere(rows){
 }
 
 /* ================= Rendering ================= */
-document.querySelectorAll("header nav button").forEach(bt=>bt.onclick=()=>{UI.view=bt.dataset.v;UI.bewerbId=null;location.hash=bt.dataset.v;render()});
+document.querySelectorAll("header [data-v]").forEach(bt=>bt.onclick=()=>{UI.view=bt.dataset.v;UI.bewerbId=null;location.hash=bt.dataset.v;render()});
 document.addEventListener("input",e=>{if(e.target&&e.target.id&&e.target.closest&&e.target.closest("#app"))e.target.dataset.dirty="1"});
 function clearDirty(){document.querySelectorAll("#app [data-dirty]").forEach(e=>delete e.dataset.dirty)}
 function render(keepInputs){
   // Stand-Auswahl zurücksetzen, sobald die Übersicht „Ergebnis erfassen“ verlassen wird
   if(!(UI.view==="bewerbe"&&UI.bewerbId&&UI.tab==="erfassung"&&!UI.dg&&!UI.editErg))UI.sw=null;
   const dirty={};if(keepInputs)document.querySelectorAll("#app [data-dirty='1']").forEach(e=>{if(e.id&&e.tagName!=="SELECT"&&e.type!=="checkbox"&&e.type!=="file")dirty[e.id]=e.value});
-  document.querySelectorAll("header nav button").forEach(bt=>bt.classList.toggle("on",bt.dataset.v===UI.view));
+  document.querySelectorAll("header [data-v]").forEach(bt=>bt.classList.toggle("on",bt.dataset.v===UI.view));
   const a=$("#app");
   const fa=document.activeElement; const keep=fa&&fa.id?{id:fa.id,ss:fa.selectionStart,se:fa.selectionEnd}:null;
   const ortKey=[UI.view,UI.bewerbId,UI.tab,UI.dg].join("|"),gleicherOrt=UI._ort===ortKey;UI._ort=ortKey;
@@ -400,6 +420,90 @@ function render(keepInputs){
   if(keep){const e=document.getElementById(keep.id);if(e){e.focus({preventScroll:true});try{e.setSelectionRange(keep.ss,keep.se)}catch(x){}}}
   Object.entries(scr).forEach(([id,v])=>{const e=document.getElementById(id);if(e)e.scrollTop=v});
   if(winY!=null&&Math.abs(window.scrollY-winY)>1)window.scrollTo(0,winY);
+  uhrMiniUpdate();
+}
+
+
+/* ================= Stoppuhr ================= */
+const UHR={modus:"stopp",laeuft:false,start:0,basis:0,dauer:150000,fertig:false,timer:null};
+(()=>{try{const s=JSON.parse(localStorage.getItem("ksv_uhr_sound")||"null");UHR.sStart=s?!!s.start:false;UHR.sEnde=s?!!s.ende:true;UHR.ipsc=s?!!s.ipsc:false}catch(e){UHR.sStart=false;UHR.sEnde=true;UHR.ipsc=false}})();
+function uhrSoundSpeichern(){try{localStorage.setItem("ksv_uhr_sound",JSON.stringify({start:UHR.sStart,ende:UHR.sEnde,ipsc:UHR.ipsc}))}catch(e){}}
+function uhrZeit(){return UHR.basis+(UHR.laeuft?Date.now()-UHR.start:0)}
+function uhrText(ms,zehntel){ms=Math.max(0,ms);const m=Math.floor(ms/60000),s=Math.floor(ms/1000)%60,z=Math.floor(ms/100)%10;return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}${zehntel?`<span class="uhrz">,${z}</span>`:""}`}
+function uhrAnzeigeMs(){return UHR.modus==="count"?Math.max(0,UHR.dauer-uhrZeit()):uhrZeit()}
+const UHR_PROG={lade:{s:60,name:"60s Laden",ico:"patrone"},b20:{s:20,name:"20s Bewerb",ico:"ziel"},b60:{s:60,name:"60s Bewerb",ico:"ziel"},b150:{s:150,name:"150s Bewerb",ico:"ziel"}};
+function uhrProg(){return UHR.lade&&UHR_PROG[UHR.lade]||null}
+function uhrGrenzen(){const p=uhrProg();if(!p)return null;const s=p.s*1000;return {gelb:s*2/3,rot:s*5/6,ende:s}} // Ladezeit 60 s: gelb ab 40 s, rot ab 50 s
+function uhrLadeStufe(){const g=uhrGrenzen();if(!g||UHR.modus!=="stopp")return "";const ms=uhrZeit();return ms>=g.ende?"lende":ms>=g.rot?"lrot":ms>=g.gelb?"lgelb":""}
+function uhrTick(){
+  const gz=uhrGrenzen();if(gz&&UHR.modus==="stopp"&&UHR.laeuft&&uhrZeit()>=gz.ende){UHR.basis=gz.ende;UHR.laeuft=false;uhrStoppTimer();if(UHR.sEnde)uhrSignal("ende");if(document.getElementById("uhrAnz"))render(true);else{toast("⏰ "+uhrProg().name+" – Zeit abgelaufen!");uhrMiniUpdate()}return}
+  if(UHR.modus==="count"&&UHR.laeuft&&uhrZeit()>=UHR.dauer){UHR.basis=UHR.dauer;UHR.laeuft=false;UHR.fertig=true;if(UHR.sEnde)uhrSignal("ende");uhrStoppTimer();if(document.getElementById("uhrAnz"))render(true);else{toast("⏰ Countdown abgelaufen!");uhrMiniUpdate()}return}
+  uhrMiniUpdate();
+  const e=document.getElementById("uhrAnz");if(e){const st=uhrLadeStufe();e.classList.toggle("lgelb",st==="lgelb");e.classList.toggle("lrot",st==="lrot");e.classList.toggle("lende",st==="lende")}if(e)e.innerHTML=uhrText(UHR.modus==="count"?Math.ceil(uhrAnzeigeMs()/100)*100:uhrAnzeigeMs(),true);
+}
+function uhrMiniUpdate(){
+  const el=document.getElementById("uhrMini");if(!el)return;
+  const aufUhr=!!document.getElementById("uhrAnz");
+  const aktiv=UHR.laeuft||UHR.fertig; // nur wenn die Uhr läuft (oder der Countdown gerade abgelaufen ist)
+  document.body.classList.toggle("mituhr",aktiv&&!aufUhr);if(!aktiv||aufUhr){el.hidden=true;return}
+  const cd=UHR.modus==="count",ms=uhrAnzeigeMs();
+  const st=uhrLadeStufe();el.hidden=false;el.classList.toggle("ende",UHR.fertig||st==="lrot");el.classList.toggle("gelb",st==="lgelb");el.classList.toggle("pause",!UHR.laeuft&&!UHR.fertig);
+  el.innerHTML=`${ICO.uhr}<span class="mlab">${cd?"Countdown":uhrProg()?uhrProg().name:"Stoppuhr"}</span><span class="mzeit">${UHR.fertig?"Zeit abgelaufen!":uhrText(cd?Math.ceil(ms/100)*100:ms,true)}</span>`;
+}
+function uhrStoppTimer(){if(UHR.timer){clearInterval(UHR.timer);UHR.timer=null}}
+let uhrAudio=null;
+function uhrSignal(art){try{uhrAudio=uhrAudio||new (window.AudioContext||window.webkitAudioContext)();const c=uhrAudio;c.resume&&c.resume();
+  // Start und IPSC: derselbe durchdringende Piep · Ende: Alarm aus 6 Tönen (abwechselnd hoch/tief)
+  // IPSC/Start: länger, lauter und mit zweitem Oberton für einen schärferen Klang
+  const toene=(art==="ende")?[0,0.4,0.8,1.2,1.6,2.0].map((t0,i)=>[t0,i%2?1900:2600,0.32,0.4]):[[0,2400,0.75,0.6],[0,3150,0.75,0.25]];
+  toene.forEach(([t0,f,len,vol])=>{const o=c.createOscillator(),g=c.createGain();o.type="square";o.frequency.value=f;o.connect(g);g.connect(c.destination);
+    g.gain.setValueAtTime(0.0001,c.currentTime+t0);g.gain.exponentialRampToValueAtTime(vol,c.currentTime+t0+0.008);g.gain.setValueAtTime(vol,c.currentTime+t0+len-0.04);g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+t0+len);o.start(c.currentTime+t0);o.stop(c.currentTime+t0+len+0.02)})}catch(e){}
+  if(art==="ende")try{navigator.vibrate&&navigator.vibrate([300,150,300,150,300])}catch(e){}}
+function vStoppuhr(){
+  UHR.modus="stopp";
+  const ms=uhrAnzeigeMs(),p=uhrProg(),g=uhrGrenzen(),st=uhrLadeStufe();
+  const f=x=>{const s=Math.round(x/100)/10;return (Number.isInteger(s)?s:s.toFixed(1).replace(".",","))+" s"};
+  return `<div class="card uhrcard${UHR.fertig?" uhrende":""}"><div class="uhrhaupt">
+  <div class="uhrtitel">${p?esc(p.name):"Stoppuhr"}</div>
+  <div class="uhranz ${st}" id="uhrAnz">${uhrText(ms,true)}</div>
+  ${UHR.warte?`<div class="uhrfertig" style="color:var(--warn)">Achtung … Standby – warte auf den Piepton</div>`:""}${p?`<div class="small muted" style="margin-top:-4px">${esc(p.name)}: ab ${f(g.gelb)} gelb blinkend · ab ${f(g.rot)} rot blinkend · Stopp bei ${uhrText(g.ende,false)}${st==="lende"?` – <b style="color:#c62828">Zeit abgelaufen!</b>`:""}</div>`:""}
+  <div class="uhrknoepfe">
+    <button class="b uhrbtn" id="uhrStart">${UHR.warte?"✖ Abbrechen":UHR.laeuft?"⏸ Pause":(uhrZeit()>0&&st!=="lende"?"▶ Weiter":"▶ Start")}</button>
+    <button class="b g uhrbtn" id="uhrReset">↺ Zurücksetzen</button>
+  </div>
+  <div class="uhroptitel">Töne &amp; Optionen</div><div class="uhrsound"><label><input type="checkbox" id="uhrSStart" ${UHR.sStart?"checked":""}> Sound bei Start</label><label><input type="checkbox" id="uhrSEnde" ${UHR.sEnde?"checked":""}> Sound bei Ende</label><label><input type="checkbox" id="uhrIpsc" ${UHR.ipsc?"checked":""}> IPSC Timer</label></div>${UHR.ipsc?`<div class="small muted" style="margin-top:6px">IPSC Timer: Nach „Start“ ertönt nach zufälligen 3–7 Sekunden ein Piepton – erst dann läuft die Zeit.</div>`:""}
+  <p class="small muted" style="text-align:center;margin-top:16px">Die Uhr läuft weiter, auch wenn du in einen anderen Reiter wechselst. Für die Töne den Ton am iPad einschalten.</p>
+  </div>
+  <div class="uhrprog"><div class="small muted" style="text-align:center;margin-bottom:-2px">Programm wählen</div>${Object.entries(UHR_PROG).map(([k,q])=>`<button class="ladebtn ${UHR.lade===k?"on":""}" data-uhrprog="${k}" title="Auswählen, dann ‚Start‘: ab ${f(q.s*2/3*1000)} gelb, ab ${f(q.s*5/6*1000)} rot blinkend, Stopp bei ${uhrText(q.s*1000,false)}">${ICO[q.ico]}${q.name}</button>`).join("")}</div>
+  </div>`;
+}
+function bindStoppuhr(){
+  const laufName=()=>uhrProg()?uhrProg().name:"Stoppuhr";
+  const warnung=(ok,was,label)=>{if(!(UHR.laeuft||UHR.warte)){ok();return}
+    bestaetigen(`<b style="color:var(--warn);font-size:17px">⚠ Achtung: „${esc(laufName())}“ läuft gerade!</b><br><br>${was}<br><br><span class="small muted">Solange du nicht bestätigst, läuft die Zeit ungestört weiter.</span>`,ok,label);};
+  on("uhrStart","click",()=>{try{uhrAudio=uhrAudio||new (window.AudioContext||window.webkitAudioContext)();uhrAudio.resume&&uhrAudio.resume()}catch(e){}
+    if(UHR.warte){warnung(()=>{uhrStartAktion();render(true)},"Willst du den Start wirklich abbrechen?","Ja, abbrechen");return} // Pause: ohne Nachfrage
+    uhrStartAktion();render(true)});
+  function uhrStartAktion(){
+    const los=()=>{UHR.start=Date.now();UHR.laeuft=true;UHR.bid=UI.bewerbId;uhrStoppTimer();UHR.timer=setInterval(uhrTick,50)};
+    if(UHR.warte){clearTimeout(UHR.warte);UHR.warte=null}
+    else if(UHR.laeuft){UHR.basis=uhrZeit();UHR.laeuft=false;uhrStoppTimer();if(UHR.sEnde)uhrSignal("ende")}
+    else if(UHR.ipsc){if(UHR.fertig){UHR.basis=0;UHR.fertig=false}
+      const ms=3000+Math.random()*4000; // IPSC: zufällige Verzögerung 3–7 s, dann Piep und Start
+      UHR.warte=setTimeout(()=>{UHR.warte=null;uhrSignal("ipsc");los();if(document.getElementById("uhrAnz"))render(true);else uhrMiniUpdate()},ms)}
+    else{if(uhrLadeStufe()==="lende"){UHR.basis=0}if(UHR.sStart)uhrSignal("start");if(UHR.fertig){UHR.basis=0;UHR.fertig=false}los()}
+  }
+  on("uhrIpsc","change",e=>{UHR.ipsc=e.target.checked;uhrSoundSpeichern();render(true)});
+  on("uhrSStart","change",e=>{UHR.sStart=e.target.checked;uhrSoundSpeichern()});
+  on("uhrSEnde","change",e=>{UHR.sEnde=e.target.checked;uhrSoundSpeichern()});
+  onAll("[data-uhrprog]","click",e=>{const k=e.dataset.uhrprog,neu=UHR.lade===k?false:k;
+    const waehle=()=>{if(UHR.warte){clearTimeout(UHR.warte);UHR.warte=null}uhrStoppTimer();UHR.modus="stopp";UHR.lade=neu;UHR.laeuft=false;UHR.fertig=false;UHR.basis=0;render(true)};
+    warnung(waehle,neu?`Willst du sie beenden und „${esc(UHR_PROG[neu].name)}“ auswählen? (Die Zeit wird auf 0 gesetzt.)`:`Willst du sie beenden und „${esc(UHR_PROG[k].name)}“ abwählen? (Die Zeit wird auf 0 gesetzt.)`,"Ja, beenden")});
+  on("uhrReset","click",()=>warnung(()=>{if(UHR.warte){clearTimeout(UHR.warte);UHR.warte=null}UHR.laeuft=false;UHR.basis=0;UHR.fertig=false;uhrStoppTimer();render(true)},"Willst du die Zeit wirklich beenden und auf 0 zurücksetzen?","Ja, zurücksetzen"));
+  onAll("[data-uhrmodus]","click",e=>{if(UHR.modus===e.dataset.uhrmodus&&!UHR.lade)return;UHR.lade=false;if(UHR.warte){clearTimeout(UHR.warte);UHR.warte=null}UHR.modus=e.dataset.uhrmodus;UHR.laeuft=false;UHR.basis=0;UHR.fertig=false;uhrStoppTimer();render(true)});
+  onAll("[data-uhrdauer]","click",e=>{UHR.dauer=Number(e.dataset.uhrdauer)*1000;UHR.laeuft=false;UHR.basis=0;UHR.fertig=false;uhrStoppTimer();render(true)});
+  on("uhrSetzen","click",()=>{const m=Math.max(0,Math.min(99,Number($("#uhrMin").value)||0)),s=Math.max(0,Math.min(59,Number($("#uhrSek").value)||0));
+    if(!m&&!s){toast("Bitte eine Zeit eingeben.");return}UHR.dauer=(m*60+s)*1000;UHR.laeuft=false;UHR.basis=0;UHR.fertig=false;uhrStoppTimer();clearDirty();render()});
 }
 
 function vBewerbe(){
@@ -420,17 +524,18 @@ function vBewerbe(){
 
 function vBewerb(){
   const b=S.bewerbe[UI.bewerbId];
-  const tabs=[["wertung","Wertung"],["erfassung","Ergebnis erfassen"],["teilnehmer",`Teilnehmer (${(b.teilnehmer||[]).length})`],["antritte","Alle Durchgänge"],["einstellungen","Einstellungen"]];
+  const tabs=[["wertung",ICO.pokal+"Rangliste"],["erfassung",ICO.ziel+"Trefferaufnahme"],["teilnehmer",`${ICO.schuetze}Teilnehmer (${(b.teilnehmer||[]).length})`],["antritte",`${ICO.liste}Überblick Durchgänge (${durchgaenge(b).filter(d=>d.fertig).length})`],["stoppuhr",ICO.uhr+"Stoppuhr"],["einstellungen",ICO.zahnrad+`<span class="tabtxt">Einstellungen</span>`]];
   let body="";
   if(UI.tab==="wertung")body=vWertung(b);
   else if(UI.tab==="erfassung")body=vErfassung(b);
   else if(UI.tab==="teilnehmer")body=vTeilnehmer(b);
   else if(UI.tab==="antritte")body=vAntritte(b);
+  else if(UI.tab==="stoppuhr")body=vStoppuhr();
   else body=vBewerbForm(b);
   return `<div class="flex"><button class="b g" id="zurueck" style="font-size:18px;padding:12px 24px;font-weight:600;border-width:2px">← Bewerbe</button></div>
   <div class="flex" style="margin-top:8px"><h2 class="sp" style="margin:0">${esc(b.name)}</h2>
   <span class="small muted">${fmtD(b.start)}${b.ende?" – "+fmtD(b.ende):""} · max. ${maxGesamt(b)} Ringe · ${esc(MODI[MODUS]?.replace("N",b.bestN||2)||"")}</span></div>
-  <div class="tabs">${tabs.map(([k,l])=>`<button data-tab="${k}" class="${UI.tab===k?"on":""}">${l}</button>`).join("")}</div>${body}`;
+  <div class="tabs">${tabs.map(([k,l])=>`<button data-tab="${k}" class="${UI.tab===k?"on":""}"${k==="einstellungen"?' title="Einstellungen"':""}>${l}</button>`).join("")}</div>${body}`;
 }
 
 function vWertung(b){
@@ -441,7 +546,7 @@ function vWertung(b){
   const offen=ohneNamen(b).length;
   const laufend=Object.values(S.ergebnisse).filter(r=>r.bewerbId===b.id&&!komplett(b,r)).length;
   const offenHinweis=(laufend?`<div class="info">${laufend} Ergebnis${laufend===1?"":"se"} noch nicht vollständig (Durchgang läuft) – zählt erst nach der letzten Serie.</div>`:"")+(offen?`<div class="notice">${offen} Ergebnis${offen===1?"":"se"} noch ohne Namen – zählt erst nach der Zuordnung. <button class="b g sm" data-tab="antritte">Jetzt zuordnen</button></div>`:"");
-  if(!all.length)return offenHinweis+kalChips+`<div class="card info">Noch keine gewerteten Ergebnisse. Unter „Ergebnis erfassen“ eintragen.</div>`;
+  if(!all.length)return offenHinweis+kalChips+`<div class="card info">Noch keine gewerteten Ergebnisse. Unter „Trefferaufnahme“ eintragen.</div>`;
   const klassenVorh=KLASSEN_ORD.filter(k=>all.some(r=>r.klasse===k));
   const filters=[["gesamt","Gesamt"],["w","Damen"],["m","Herren"],...(all.some(r=>r.geschlecht==="x")?[["x","Inter"]]:[]),...klassenVorh.map(k=>["k:"+k,KLASSEN[k]]),["klassen","Alle Klassen"]];
   if(!filters.some(f=>f[0]===UI.filter))UI.filter="gesamt";
@@ -579,7 +684,7 @@ function vKomplett(b){
   <div class="flex" style="margin-top:14px"><div class="sp"><div class="small muted">Gesamt</div><div class="total" id="eTotal">0</div><div class="small muted" id="eX"></div></div>
   <div style="flex:2 1 220px"><label>Notiz (optional)</label><input id="eNotiz" value="${esc(edit?edit.notiz:"")}"></div></div>
   <div class="right">${edit?`<button class="b g" id="eAbbr">Abbrechen</button>`:""}<button class="b" id="eSave" ${voll?"disabled":""}>${edit?"Änderung speichern":"Speichern"}</button></div>
-  <p class="small muted">Eingabe je Serie: Summe (47), Summe mit X (47xx) oder Einzelschüsse (x 10 9 9 8) – die x-Taste hängt ein X an. Serien mit Enter durchtippen – nach der letzten Serie wird gespeichert. Den Namen musst du nicht sofort wählen: Ergebnisse ohne Namen kannst du unten (oder unter „Alle Durchgänge“) nachträglich zuordnen.</p>
+  <p class="small muted">Eingabe je Serie: Summe (47), Summe mit X (47xx) oder Einzelschüsse (x 10 9 9 8) – die x-Taste hängt ein X an. Serien mit Enter durchtippen – nach der letzten Serie wird gespeichert. Den Namen musst du nicht sofort wählen: Ergebnisse ohne Namen kannst du unten (oder unter „Überblick Durchgänge“) nachträglich zuordnen.</p>
   </div>
   ${offen.length?`<div class="card" style="border-color:var(--warn)"><div class="flex"><h3 class="sp" style="margin:0">Ohne Namen (${offen.length})</h3>
 </div>
@@ -689,10 +794,10 @@ function vSchuetzen(){
   const GES={w:"weiblich",x:"inter",m:"männlich"};
   const kl=s=>s.geschlecht==="x"?"I":altersKlasse(s,{start:String(jahr)});
   const nb=s=>Object.values(S.bewerbe).filter(b=>teilnahme(b,s.id)).length;
-  const so=UI.sSort||(UI.sSort={k:"name",d:1});
+  const so=UI.sSort&&UI.sSort.k!=="name"?UI.sSort:(UI.sSort={k:"nachname",d:1});
   const cmpS=(a,b)=>String(a||"").localeCompare(String(b||""),"de",{sensitivity:"base"});
   const leer=v=>v===""||v==null; // leere Werte immer ans Ende
-  const keyf={name:s=>sName(s),verein:s=>s.verein,jg:s=>s.geburtsjahr,geschlecht:s=>GES[s.geschlecht]||GES.m,klasse:s=>KLASSEN_ORD.indexOf(kl(s)),bewerbe:s=>nb(s),notiz:s=>s.notiz};
+  const keyf={name:s=>sName(s),nachname:s=>s.nachname,vorname:s=>s.vorname,verein:s=>s.verein,jg:s=>s.geburtsjahr,geschlecht:s=>GES[s.geschlecht]||GES.m,klasse:s=>KLASSEN_ORD.indexOf(kl(s)),bewerbe:s=>nb(s),notiz:s=>s.notiz};
   const list=Object.values(S.schuetzen).filter(s=>!q||sName(s).toLowerCase().includes(q)||(s.verein||"").toLowerCase().includes(q)||(s.notiz||"").toLowerCase().includes(q))
     .sort((x,y)=>{const a=keyf[so.k](x),b=keyf[so.k](y);if(leer(a)!==leer(b))return leer(a)?1:-1;
       const c=typeof a==="number"&&typeof b==="number"?a-b:(so.k==="jg"?Number(a)-Number(b):cmpS(a,b));return c*so.d||cmpS(sName(x),sName(y))});
@@ -701,9 +806,9 @@ function vSchuetzen(){
   const th=(k,l,cls)=>`<th class="sortth ${cls||""}" data-ssort="${k}">${l}<span class="sortpfeil">${so.k===k?(so.d>0?" ▲":" ▼"):" ↕"}</span></th>`;
   return `<div class="flex"><h2 class="sp">Schützen</h2><button class="b" id="sNeu">+ Neue Person</button></div>
   <div class="card"><input id="sSuche" placeholder="Suchen nach Name, Verein oder Notiz …" value="${esc(UI.suche)}">
-  ${sel.size?`<div class="selbar"><b>${sel.size} ausgewählt</b><button class="b" id="sMulti">✎ Gemeinsam bearbeiten</button><button class="b g" id="sSelLeer">Auswahl aufheben</button></div>`:""}
-  ${list.length?`<div class="tw" style="margin-top:8px"><table><thead><tr><th class="cbcol"><input type="checkbox" id="sAlle" ${alleAn?"checked":""} title="Alle auswählen"></th>${th("name","Name")}${th("verein","Verein")}${th("jg","Jg.")}${th("geschlecht","Geschlecht")}${th("klasse","Klasse "+jahr)}${th("bewerbe","Bewerbe","n")}${th("notiz","Notiz")}</tr></thead><tbody>
-  ${list.map(s=>`<tr class="click ${sel.has(s.id)?"selrow":""}" data-editsch="${s.id}"><td class="cbcol" data-cbcell="${s.id}"><input type="checkbox" data-ssel="${s.id}" ${sel.has(s.id)?"checked":""}></td><td><b>${esc(sName(s))}</b></td><td>${esc(s.verein||"")}</td><td>${esc(s.geburtsjahr||"")}</td>
+  <div class="selbar" style="min-height:58px;box-sizing:border-box">${sel.size?`<b>${sel.size} ausgewählt</b><button class="b" id="sMulti">✎ Gemeinsam bearbeiten</button><button class="b g" id="sSelLeer">Auswahl aufheben</button>`:`<span class="small muted">Kästchen antippen, um mehrere Schützen gemeinsam zu bearbeiten oder zu löschen.</span>`}</div>
+  ${list.length?`<div class="tw" style="margin-top:8px"><table class="schtab"><thead><tr><th class="cbcol"><input type="checkbox" id="sAlle" ${alleAn?"checked":""} title="Alle auswählen"></th>${th("nachname","Nachname")}${th("vorname","Vorname")}${th("verein","Verein")}${th("jg","Jg.")}${th("geschlecht","Geschlecht")}${th("klasse","Klasse "+jahr)}${th("bewerbe","Bewerbe","n")}${th("notiz","Notiz")}</tr></thead><tbody>
+  ${list.map(s=>`<tr class="click ${sel.has(s.id)?"selrow":""}" data-editsch="${s.id}"><td class="cbcol" data-cbcell="${s.id}"><input type="checkbox" data-ssel="${s.id}" ${sel.has(s.id)?"checked":""}></td><td><b>${esc(s.nachname||"")}</b></td><td><b>${esc(s.vorname||"")}</b></td><td>${esc(s.verein||"")}</td><td>${esc(s.geburtsjahr||"")}</td>
   <td>${GES[s.geschlecht]||GES.m}</td><td><span class="pill">${KLASSEN[kl(s)]}</span></td>
   <td class="n">${nb(s)}</td><td class="small">${esc(s.notiz||"")}</td></tr>`).join("")}</tbody></table></div>`:`<p class="muted">Keine Personen.</p>`}</div>`;
 }
@@ -775,6 +880,7 @@ function vDaten(){
   <div class="flex"><button class="b" id="xlsxSchuetzen">📊 Alle Schützen als Excel</button></div>
   <h3>Personen per CSV importieren</h3>
   <p class="small muted">Spalten: Nachname;Vorname;Geburtsjahr;Geschlecht (m/w/x);Verein – eine Person pro Zeile.</p>
+  <div class="notice small" style="margin:6px 0 8px"><b>Achtung Reihenfolge:</b> zuerst der <b>Nachname</b>, dann der <b>Vorname</b> – also <b>Nachname;Vorname;Geburtsjahr;Geschlecht;Verein</b> (z. B. <i>Schaidl;Roman;1980;m;KSV Siemens</i>). Steht in deiner Liste der Vorname vorne, werden die Namen vertauscht gespeichert.</div>
   <textarea id="csvP" rows="4" placeholder="Muster;Max;1972;m;KSV Siemens"></textarea>
   <div class="right"><button class="b" id="csvPImp">Personen importieren</button></div></div>
   <div class="card small"><b>Altersklassen nach FFWGK-Regeln (15. Ausgabe, 01.01.2025), Abschnitt 2.1</b> – maßgeblich ist das Alter, das im Jahr des Bewerbsbeginns erreicht wird.
@@ -1313,13 +1419,14 @@ function bind(){
       fertig(v)});
     onAll("[data-delerg]","click",e=>{const r=S.ergebnisse[e.dataset.delerg];bestaetigen(`Ergebnis ${num(r.total)} von ${r.sid?esc(sName(S.schuetzen[r.sid])):"Stand "+esc(r.stand||"?")} (${fmtD(r.datum)}) löschen?`,()=>del("ergebnisse",r.id))});
     if(UI.tab==="einstellungen")bindForm(b);
+    if(UI.tab==="stoppuhr")bindStoppuhr();
   }
   // Schützen
   on("sSuche","input",e=>{UI.suche=e.target.value;render()});
   on("sNeu","click",()=>schuetzeDialog(null));
   onAll("[data-editsch]","click",(e,ev)=>{if(ev&&ev.target&&ev.target.closest&&ev.target.closest("[data-cbcell]"))return;schuetzeDialog(S.schuetzen[e.dataset.editsch])});
   onAll("[data-cbcell]","click",(e,ev)=>{const id=e.dataset.cbcell,sel=UI.sSel||(UI.sSel=new Set());sel.has(id)?sel.delete(id):sel.add(id);render(true)});
-  onAll("[data-ssort]","click",e=>{const k=e.dataset.ssort,so=UI.sSort||{k:"name",d:1};UI.sSort=so.k===k?{k,d:-so.d}:{k,d:1};render(true)});
+  onAll("[data-ssort]","click",e=>{const k=e.dataset.ssort,so=UI.sSort||{k:"nachname",d:1};UI.sSort=so.k===k?{k,d:-so.d}:{k,d:1};render(true)});
   on("sAlle","click",e=>{const vis=[...document.querySelectorAll("[data-ssel]")].map(x=>x.dataset.ssel);const sel=UI.sSel||(UI.sSel=new Set());
     if(vis.every(id=>sel.has(id)))vis.forEach(id=>sel.delete(id));else vis.forEach(id=>sel.add(id));render(true)});
   on("sSelLeer","click",()=>{UI.sSel=new Set();render(true)});
@@ -1360,7 +1467,10 @@ function bindForm(b){
     $("#freiTitel").textContent=v==="spass"?"Serien (Spaß-Programm)":"Serien (freies Programm)"});
   on("fAbbr","click",()=>{UI.bewerbId=null;render()});
   on("fDel","click",()=>{const n=Object.values(S.ergebnisse).filter(r=>r.bewerbId===b.id);
-    bestaetigen(`Bewerb „${esc(b.name)}“ mit ${n.length} Ergebnis(sen) endgültig löschen? (Personen bleiben erhalten.)`,()=>{n.forEach(r=>del("ergebnisse",r.id));UI.bewerbId=null;del("bewerbe",b.id)})});
+    const tn=(b.teilnehmer||[]).length,dgs=durchgaenge(b).length;
+    bestaetigen(`<b style="color:var(--warn);font-size:17px">⚠ Bewerb löschen?</b><br><br><b>${esc(b.name)}</b> · ${fmtD(b.start)}${b.ende?" – "+fmtD(b.ende):""}<br><span class="small">${tn} Teilnehmer · ${dgs} Durchg${dgs===1?"ang":"änge"} · ${n.length} Ergebnis${n.length===1?"":"se"}</span><br><br>Alle Ergebnisse und Durchgänge dieses Bewerbs werden mitgelöscht. Die Personen in der Schützenliste bleiben erhalten.`,()=>{
+      bestaetigen(`<b style="color:var(--warn);font-size:17px">⚠ Zweite Sicherheitsabfrage</b><br><br>Soll der Bewerb <b>„${esc(b.name)}“</b> mit ${n.length} Ergebnis${n.length===1?"":"sen"} wirklich endgültig gelöscht werden?<br><br>Das kann nicht rückgängig gemacht werden.`,()=>{
+        const ob=batch;batch=true;n.forEach(r=>del("ergebnisse",r.id));UI.bewerbId=null;del("bewerbe",b.id);batch=ob;if(backend!=="db")saveLocal();render();toast(`Bewerb „${b.name}“ gelöscht.`)},"Ja, Bewerb endgültig löschen")},"Weiter …")});
   on("fSave","click",()=>{
     const name=$("#fName").value.trim();if(!name){toast("Bitte einen Namen eingeben.");$("#fName").focus();return}
     if(!document.querySelector(".katbtn.on")){toast("Bitte Großkaliber und/oder Kleinkaliber auswählen.");document.querySelector(".katbtn").scrollIntoView({block:"center"});return}
@@ -1385,7 +1495,7 @@ function bindForm(b){
 
 
 /* ================= Offline-App (PWA) ================= */
-const APP_VERSION="bb37a9c9";
+const APP_VERSION="0f2a886c";
 if("serviceWorker" in navigator&&location.protocol.startsWith("http")){
   window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").then(r=>{
     r.addEventListener("updatefound",()=>{const n=r.installing;n&&n.addEventListener("statechange",()=>{if(n.state==="installed"&&navigator.serviceWorker.controller)toast("Neue App-Version geladen – beim nächsten Öffnen aktiv.")})})
@@ -1393,6 +1503,7 @@ if("serviceWorker" in navigator&&location.protocol.startsWith("http")){
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
 /* ================= Start ================= */
 try{document.getElementById("kopfLogo").src=VEREIN.logo}catch(e){}
+try{document.getElementById("uhrMini").onclick=()=>{const bid=(UI.bewerbId&&S.bewerbe[UI.bewerbId])?UI.bewerbId:(UHR.bid&&S.bewerbe[UHR.bid]?UHR.bid:null);if(!bid){toast("Bitte einen Bewerb öffnen – dort unter „Stoppuhr“.");return}UI.view="bewerbe";UI.bewerbId=bid;UI.tab="stoppuhr";UI.dg=null;UI.editErg=null;render();window.scrollTo(0,0)}}catch(e){}
 document.getElementById("brand").onclick=()=>{UI.view="bewerbe";UI.bewerbId=null;location.hash="bewerbe";render()};
 loadLocal();
 const h=(location.hash||"").slice(1);if(["bewerbe","schuetzen","daten"].includes(h))UI.view=h;
