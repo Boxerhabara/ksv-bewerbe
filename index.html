@@ -99,7 +99,9 @@ tr.click{cursor:pointer} tr.click:hover{background:var(--accsoft)}
 .right{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:12px}
 .flex{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .sp{flex:1}
-.list-pick{max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:8px}
+.tnrot{color:#c62828;font-weight:600}.tngruen{color:#2e7d32;font-weight:600}.list-pick .pickbelegt{cursor:default}.list-pick .pickbelegt:hover{background:none}.pickgem{flex:none;padding:8px 12px;min-width:150px;text-align:center;color:#c62828;border-color:#c62828;background:none}
+.pickrow{display:flex;align-items:center;gap:10px}.pickcb{width:20px;height:20px;margin:0;flex:none;pointer-events:none}.pickname{flex:1}.pickadd{flex:none;cursor:pointer;padding:8px 12px;min-width:150px;text-align:center;font-size:14px;font-weight:600}
+.list-pick{max-height:720px;-webkit-overflow-scrolling:touch;overflow:auto;border:1px solid var(--line);border-radius:8px}
 .list-pick div{padding:7px 10px;border-bottom:1px solid var(--line);cursor:pointer}
 .list-pick div:hover{background:var(--accsoft)}
 .tw{overflow-x:auto}
@@ -388,12 +390,16 @@ function render(keepInputs){
   document.querySelectorAll("header nav button").forEach(bt=>bt.classList.toggle("on",bt.dataset.v===UI.view));
   const a=$("#app");
   const fa=document.activeElement; const keep=fa&&fa.id?{id:fa.id,ss:fa.selectionStart,se:fa.selectionEnd}:null;
+  const ortKey=[UI.view,UI.bewerbId,UI.tab,UI.dg].join("|"),gleicherOrt=UI._ort===ortKey;UI._ort=ortKey;
+  const scr={};if(gleicherOrt)document.querySelectorAll("#app [data-keepscroll]").forEach(e=>{if(e.id)scr[e.id]=e.scrollTop});const winY=gleicherOrt?window.scrollY:null;
   if(UI.view==="bewerbe")a.innerHTML=UI.bewerbId&&S.bewerbe[UI.bewerbId]?vBewerb():vBewerbe();
   else if(UI.view==="schuetzen")a.innerHTML=vSchuetzen();
   else a.innerHTML=vDaten();
   bind();
   Object.entries(dirty).forEach(([id,v])=>{const e=document.getElementById(id);if(e&&e.value!==v){e.value=v;e.dataset.dirty="1";if(e.classList.contains("ser"))e.dispatchEvent(new Event("input"));if(e.classList.contains("shot"))e.dispatchEvent(new Event("change"))}else if(e)e.dataset.dirty="1"});
-  if(keep){const e=document.getElementById(keep.id);if(e){e.focus();try{e.setSelectionRange(keep.ss,keep.se)}catch(x){}}}
+  if(keep){const e=document.getElementById(keep.id);if(e){e.focus({preventScroll:true});try{e.setSelectionRange(keep.ss,keep.se)}catch(x){}}}
+  Object.entries(scr).forEach(([id,v])=>{const e=document.getElementById(id);if(e)e.scrollTop=v});
+  if(winY!=null&&Math.abs(window.scrollY-winY)>1)window.scrollTo(0,winY);
 }
 
 function vBewerbe(){
@@ -631,11 +637,16 @@ function vAntritte(b){
 function vTeilnehmer(b){
   const tn=(b.teilnehmer||[]).map(t=>({t,s:S.schuetzen[t.sid]})).filter(x=>x.s).sort((x,y)=>sName(x.s).localeCompare(sName(y.s)));
   const q=UI.suche.toLowerCase();
-  const frei=Object.values(S.schuetzen).filter(s=>!teilnahme(b,s.id)&&(!q||sName(s).toLowerCase().includes(q)||(s.verein||"").toLowerCase().includes(q))).sort((x,y)=>sName(x).localeCompare(sName(y)));
+  const pick=Object.values(S.schuetzen).filter(s=>!q||sName(s).toLowerCase().includes(q)||(s.verein||"").toLowerCase().includes(q)).sort((x,y)=>sName(x).localeCompare(sName(y)));
+  const frei=pick.filter(s=>!teilnahme(b,s.id));
   return `<div class="card"><div class="flex"><h3 class="sp" style="margin:0">Teilnehmer hinzufügen</h3><button class="b" id="tnNeu">+ Neue Person anlegen &amp; melden</button></div>
   <p class="small muted">Teilnehmer können jederzeit – auch während eines laufenden Bewerbs – nachgemeldet werden.</p>
   <input id="tnSuche" placeholder="Aus der Schützenliste suchen …" value="${esc(UI.suche)}">
-  ${frei.length?`<div class="list-pick" style="margin-top:6px">${frei.slice(0,60).map(s=>`<div data-addtn="${s.id}">${esc(sName(s))} <span class="muted small">${esc(s.verein||"")} · Jg. ${esc(s.geburtsjahr||"?")} · ${s.geschlecht==="w"?"w":s.geschlecht==="x"?"Inter":"m"}</span> <span class="pill" style="float:right">+ melden</span></div>`).join("")}</div>`:`<p class="small muted">${Object.keys(S.schuetzen).length?"Keine weiteren Personen gefunden.":"Die Schützenliste ist noch leer."}</p>`}
+  ${(()=>{const mk=UI.tnMark||(UI.tnMark=new Set());[...mk].forEach(id=>{if(!S.schuetzen[id]||teilnahme(b,id))mk.delete(id)});
+    const alleMk=frei.length&&frei.every(s=>mk.has(s.id));
+    return pick.length?`<div class="selbar" style="margin-top:8px">${mk.size?`<b>${mk.size} markiert</b><button class="b" id="tnMarkMelden">✓ Markierte melden (${mk.size})</button><button class="b g" id="tnMarkLeer">Markierung aufheben</button>`:`<span class="small muted">Tipp: Schützen antippen zum Markieren, dann alle auf einmal melden.</span>`}${frei.length?`<button class="b g" id="tnMarkAlle" style="margin-left:auto">`:"<span hidden>"}${alleMk?"Keine markieren":`Alle ${frei.length} markieren`}${frei.length?"</button>":"</span>"}</div>
+  <p class="small" style="margin:6px 0 0">🟢 verfügbar (${frei.length}) · 🔴 bereits gemeldet (${pick.length-frei.length})</p>
+  <div class="list-pick" id="tnPick" data-keepscroll style="margin-top:6px">${pick.map(s=>teilnahme(b,s.id)?`<div class="pickrow pickbelegt"><input type="checkbox" class="pickcb" tabindex="-1" disabled style="visibility:hidden"><span class="pickname">🔴 <span class="tnrot">${esc(sName(s))}</span> <span class="muted small">${esc(s.verein||"")} · Jg. ${esc(s.geburtsjahr||"?")} · ${s.geschlecht==="w"?"w":s.geschlecht==="x"?"Inter":"m"}</span></span><span class="pill pickgem">Angemeldet</span></div>`:`<div class="pickrow" data-marktn="${s.id}"><input type="checkbox" class="pickcb" tabindex="-1" ${mk.has(s.id)?"checked":""}><span class="pickname">🟢 <span class="tngruen">${esc(sName(s))}</span> <span class="muted small">${esc(s.verein||"")} · Jg. ${esc(s.geburtsjahr||"?")} · ${s.geschlecht==="w"?"w":s.geschlecht==="x"?"Inter":"m"}</span></span><span class="pill pickadd" data-addtn="${s.id}">Anmelden</span></div>`).join("")}</div>`:`<p class="small muted">${Object.keys(S.schuetzen).length?"Keine Personen gefunden.":"Die Schützenliste ist noch leer."}</p>`})()}
   </div>
   <div class="card"><h3 style="margin-top:0">Gemeldet (${tn.length})</h3>
   ${tn.length?`<div class="tw"><table><thead><tr><th>Name</th><th>Verein</th><th>Jg.</th><th>Automatische Klasse</th><th>Startet in Klasse</th><th>Gast</th><th>Gemeldet</th><th></th></tr></thead><tbody>
@@ -759,6 +770,9 @@ function vDaten(){
   <div style="margin-top:12px"><label>⬇ Abgleich-Datei vom anderen Gerät laden</label><input type="file" id="impFile" accept=".json,application/json" style="max-width:360px"></div>
   <p class="small muted" style="margin-top:8px"><b>So geht’s:</b> Gerät A „Abgleich-Datei erstellen“ → Datei per AirDrop, Mail oder Google Drive an Gerät B → dort laden. Danach umgekehrt (B erstellen → A laden), dann haben beide denselben Stand.
   Tipp: Einen gemeinsamen Bewerb nur auf <b>einem</b> Gerät anlegen und zuerst abgleichen – erst dann auf beiden erfassen.</p>
+  <h3>Schützen exportieren</h3>
+  <p class="small muted">Alle Personen mit allen Angaben (Name, Geburtsjahr, Alter, Geschlecht, Klasse, Verein, Notiz, Bewerbe, Anzahl Ergebnisse) als Excel-Datei.</p>
+  <div class="flex"><button class="b" id="xlsxSchuetzen">📊 Alle Schützen als Excel</button></div>
   <h3>Personen per CSV importieren</h3>
   <p class="small muted">Spalten: Nachname;Vorname;Geburtsjahr;Geschlecht (m/w/x);Verein – eine Person pro Zeile.</p>
   <textarea id="csvP" rows="4" placeholder="Muster;Max;1972;m;KSV Siemens"></textarea>
@@ -1014,7 +1028,7 @@ function sheetXML(sh){ // sh={rows:[[{v,s}|null]], cols:[breiten], merges:["A1:F
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheetPr><pageSetUpPr fitToPage="1"/></sheetPr><sheetViews><sheetView workbookViewId="0" showGridLines="0"/></sheetViews><sheetFormatPr defaultRowHeight="15"/>
 <cols>${sh.cols.map((w,i)=>`<col min="${i+1}" max="${i+1}" width="${w}" customWidth="1"/>`).join("")}</cols><sheetData>${rows}</sheetData>
 ${sh.merges&&sh.merges.length?`<mergeCells count="${sh.merges.length}">${sh.merges.map(m=>`<mergeCell ref="${m}"/>`).join("")}</mergeCells>`:""}
-<pageMargins left="0.6" right="0.6" top="0.8" bottom="0.8" header="0.3" footer="0.3"/><pageSetup paperSize="9" orientation="portrait" fitToWidth="1" fitToHeight="0"/>
+<pageMargins left="0.6" right="0.6" top="0.8" bottom="0.8" header="0.3" footer="0.3"/><pageSetup paperSize="9" orientation="${sh.quer?"landscape":"portrait"}" fitToWidth="1" fitToHeight="0"/>
 <headerFooter><oddHeader>&amp;C&amp;14${xe(VEREIN.name)}</oddHeader><oddFooter>&amp;L${xe(sh.autor?"Autor: "+sh.autor:"")}&amp;C${xe(VEREIN.name)}, ${xe(VEREIN.adresse)}&amp;R${xe("Datum: "+fmtD(today()))}</oddFooter></headerFooter>${sh.logo?'<drawing r:id="rId1"/>':""}</worksheet>`;
 }
 function logoBytes(){const b64=VEREIN.logo.split(",")[1],s=atob(b64),u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return u}
@@ -1034,6 +1048,20 @@ function xlsxDatei(sheets){
     {name:"xl/styles.xml",data:XLSX_STYLES},
     ...sheets.map((s,i)=>({name:`xl/worksheets/sheet${i+1}.xml`,data:sheetXML(s)})),...extra];
   return zipStore(files);
+}
+function excelSchuetzen(){
+  const jahr=new Date().getFullYear(),GES={w:"weiblich",x:"inter / divers",m:"männlich"};
+  const list=Object.values(S.schuetzen).sort((x,y)=>sName(x).localeCompare(sName(y),"de"));
+  const R=[[],[{v:"Schützenliste – "+VEREIN.name,s:1}],[{v:`Stand: ${fmtD(today())} · ${list.length} Personen · Klasse nach FFWGK für ${jahr}`,s:2}],[]],M=["A3:K3"];
+  R.push(["Nachname","Vorname","Geburtsjahr","Alter "+jahr,"Geschlecht","Klasse "+jahr,"Verein","Notiz","Bewerbe (Anzahl)","Bewerbe","Ergebnisse"].map(v=>({v,s:3})));
+  list.forEach((s,i)=>{const alt=i%2===0,C=alt?7:5,L=alt?6:4;
+    const bw=Object.values(S.bewerbe).filter(b=>teilnahme(b,s.id)).sort((a,b)=>(a.start||"").localeCompare(b.start||""));
+    const jg=Number(s.geburtsjahr)||"";
+    R.push([{v:s.nachname||"",s:L},{v:s.vorname||"",s:L},{v:jg,s:C},{v:jg?jahr-jg:"",s:C},{v:GES[s.geschlecht]||GES.m,s:L},
+      {v:KLASSEN[s.geschlecht==="x"?"I":altersKlasse(s,{start:String(jahr)})],s:L},{v:s.verein||"",s:L},{v:s.notiz||"",s:L},
+      {v:bw.length,s:C},{v:bw.map(b=>b.name).join(", "),s:L},{v:Object.values(S.ergebnisse).filter(r=>r.sid===s.id).length,s:C}])});
+  if(!list.length)R.push([{v:"Keine Personen angelegt.",s:4}]);
+  return xlsxDatei([{name:"Schützen",rows:R,merges:M,heights:{0:54,1:24,2:20},cols:[20,16,11,9,14,16,24,30,10,40,11],quer:true}]);
 }
 function excelListe(b){
   const kals=kaliberListe(b),mitKal=!(kals.length===1&&kals[0]==="");
@@ -1115,7 +1143,14 @@ function bind(){
       anbieten(dateiname(b)+"_Durchgaenge.csv","﻿"+l.join("\r\n"),"text/csv")});
     // Teilnehmer
     on("tnSuche","input",e=>{UI.suche=e.target.value;render()});
-    onAll("[data-addtn]","click",e=>{melde(b,e.dataset.addtn);toast("Gemeldet.")});
+    onAll("[data-addtn]","click",(e,ev)=>{ev&&ev.stopPropagation();const s=S.schuetzen[e.dataset.addtn];melde(b,e.dataset.addtn);UI.tnMark&&UI.tnMark.delete(e.dataset.addtn);toast((s?sName(s):"")+" gemeldet.")});
+    onAll("[data-marktn]","click",e=>{const id=e.dataset.marktn,mk=UI.tnMark||(UI.tnMark=new Set());mk.has(id)?mk.delete(id):mk.add(id);render(true)});
+    on("tnMarkAlle","click",()=>{const vis=[...document.querySelectorAll("[data-marktn]")].map(x=>x.dataset.marktn),mk=UI.tnMark||(UI.tnMark=new Set());
+      if(vis.every(id=>mk.has(id)))vis.forEach(id=>mk.delete(id));else vis.forEach(id=>mk.add(id));render(true)});
+    on("tnMarkLeer","click",()=>{UI.tnMark=new Set();render(true)});
+    on("tnMarkMelden","click",()=>{const ids=[...(UI.tnMark||[])].filter(id=>S.schuetzen[id]&&!teilnahme(S.bewerbe[b.id],id));if(!ids.length)return;
+      const cur=S.bewerbe[b.id];put("bewerbe",{...cur,teilnehmer:[...(cur.teilnehmer||[]),...ids.map(sid=>({sid,klasse:"",gast:false,gemeldet:today()}))]});
+      UI.tnMark=new Set();toast(ids.length+" Schützen gemeldet.")});
     on("tnNeu","click",()=>schuetzeDialog(null,o=>{melde(S.bewerbe[b.id],o.id);toast(sName(o)+" angelegt und gemeldet.")}));
     onAll("[data-klasse]","change",e=>put("bewerbe",{...b,teilnehmer:b.teilnehmer.map(t=>t.sid===e.dataset.klasse?{...t,klasse:e.value}:t)}));
     onAll("[data-gast]","change",e=>put("bewerbe",{...b,teilnehmer:b.teilnehmer.map(t=>t.sid===e.dataset.gast?{...t,gast:e.checked}:t)}));
@@ -1303,6 +1338,7 @@ function bind(){
         <p class="small muted">Damit das andere Gerät auch deinen Stand hat: hier „Abgleich-Datei erstellen“ und dort laden.</p><div class="right"><button class="b" id="abgOk">OK</button></div>`,()=>{$("#abgOk").onclick=closeModal});
     }catch(x){console.error(x);toast("Abgleich fehlgeschlagen: "+(x.message||"unbekannter Fehler"))}
     e.target.value=""};rd.readAsText(f)});
+  on("xlsxSchuetzen","click",()=>{try{const d=new Date(),p=n=>String(n).padStart(2,"0");anbieten(`KSV_Schuetzen_${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}.xlsx`,excelSchuetzen(),"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")}catch(e){console.error(e);toast("Excel-Export fehlgeschlagen.")}});
   on("csvPImp","click",()=>{const t=$("#csvP").value.trim();if(!t)return;let n=0;const doppelt=[];
     const ob=batch;batch=true;
     t.split(/\r?\n/).forEach(l=>{const c=l.split(/[;\t]/).map(x=>x.trim());if(!c[0]||/^nachname$/i.test(c[0]))return;
@@ -1349,7 +1385,7 @@ function bindForm(b){
 
 
 /* ================= Offline-App (PWA) ================= */
-const APP_VERSION="bd66de26";
+const APP_VERSION="bb37a9c9";
 if("serviceWorker" in navigator&&location.protocol.startsWith("http")){
   window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").then(r=>{
     r.addEventListener("updatefound",()=>{const n=r.installing;n&&n.addEventListener("statechange",()=>{if(n.state==="installed"&&navigator.serviceWorker.controller)toast("Neue App-Version geladen – beim nächsten Öffnen aktiv.")})})
