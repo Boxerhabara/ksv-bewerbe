@@ -41,6 +41,9 @@ label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:3px}
 button,input,select,textarea,a{touch-action:manipulation}
 @media (pointer:coarse){input,select,textarea{font-size:16px!important}button.b{min-height:40px}}
 .ser-small{white-space:normal}
+.kalbox{display:inline-flex;align-items:center;gap:4px;font-size:15px;font-weight:700;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 7px;margin:2px 3px 2px 0;cursor:pointer;user-select:none}
+.kalbox input{width:20px;height:20px;margin:0;accent-color:var(--acc)}
+.kalbox.on{border-color:var(--acc);background:var(--accsoft)}
 @media (max-width:820px){.dg-bisher{display:none}}
 input,select,textarea{width:100%;font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
 input:focus,select:focus,textarea:focus{outline:2px solid var(--acc);outline-offset:-1px}
@@ -308,8 +311,13 @@ function tiebreakCmp(a,b){ // a,b Serienarrays – FFWGK 8.2.1: Summe der letzte
   }
   return 0;
 }
-function auswertung(b){
-  const erg=Object.values(S.ergebnisse).filter(r=>r.bewerbId===b.id);
+const KAL={GK:"Großkaliber (GK)",KK:"Kleinkaliber (KK)","":"Ohne Kaliber-Angabe"};
+function kaliberListe(b){ // vorkommende Kaliber bei vollständigen Ergebnissen; [""] = keine Kaliber-Trennung
+  const vor=new Set(Object.values(S.ergebnisse).filter(r=>r.bewerbId===b.id&&r.sid&&komplett(b,r)).map(r=>r.kal||""));
+  const l=["GK","KK",""].filter(k=>vor.has(k));return l.length?l:[""];
+}
+function auswertung(b,kal){
+  const erg=Object.values(S.ergebnisse).filter(r=>r.bewerbId===b.id&&(kal===undefined||(r.kal||"")===kal));
   const per={};
   erg.forEach(r=>{if(r.sid&&S.schuetzen[r.sid]&&komplett(b,r))(per[r.sid]=per[r.sid]||[]).push(r)});
   const rows=[];
@@ -391,19 +399,22 @@ function vBewerb(){
 }
 
 function vWertung(b){
-  const all=rangiere(auswertung(b));
+  const kals=kaliberListe(b),mitKal=!(kals.length===1&&kals[0]==="");
+  if(!kals.includes(UI.kal))UI.kal=kals[0];
+  const all=rangiere(auswertung(b,mitKal?UI.kal:undefined));
+  const kalChips=mitKal?`<div class="chips" style="margin-bottom:6px">${kals.map(k=>`<button class="chip ${UI.kal===k?"on":""}" data-kalfilter="${k}" style="font-weight:700;font-size:15px;padding:7px 16px">${KAL[k]}</button>`).join("")}</div>`:"";
   const offen=ohneNamen(b).length;
   const laufend=Object.values(S.ergebnisse).filter(r=>r.bewerbId===b.id&&!komplett(b,r)).length;
   const offenHinweis=(laufend?`<div class="info">${laufend} Ergebnis${laufend===1?"":"se"} noch nicht vollständig (Durchgang läuft) – zählt erst nach der letzten Serie.</div>`:"")+(offen?`<div class="notice">${offen} Ergebnis${offen===1?"":"se"} noch ohne Namen – zählt erst nach der Zuordnung. <button class="b g sm" data-tab="antritte">Jetzt zuordnen</button></div>`:"");
-  if(!all.length)return offenHinweis+`<div class="card info">Noch keine gewerteten Ergebnisse. Unter „Ergebnis erfassen“ eintragen.</div>`;
+  if(!all.length)return offenHinweis+kalChips+`<div class="card info">Noch keine gewerteten Ergebnisse. Unter „Ergebnis erfassen“ eintragen.</div>`;
   const klassenVorh=KLASSEN_ORD.filter(k=>all.some(r=>r.klasse===k));
   const filters=[["gesamt","Gesamt"],["w","Damen"],["m","Herren"],...(all.some(r=>r.geschlecht==="x")?[["x","Inter"]]:[]),...klassenVorh.map(k=>["k:"+k,KLASSEN[k]]),["klassen","Alle Klassen"]];
   if(!filters.some(f=>f[0]===UI.filter))UI.filter="gesamt";
-  let html=offenHinweis+`<div class="chips">${filters.map(([k,l])=>`<button class="chip ${UI.filter===k?"on":""}" data-filter="${k}">${l}</button>`).join("")}</div>`;
+  let html=offenHinweis+kalChips+`<div class="chips">${filters.map(([k,l])=>`<button class="chip ${UI.filter===k?"on":""}" data-filter="${k}">${l}</button>`).join("")}</div>`;
   const tbl=(rows,titel,hinweis)=>{
     rows=rangiere(rows);
     const multi=MODUS!=="best"&&MODUS!=="last";
-    return `<div class="card"><div class="flex"><h3 class="sp" style="margin:0">${esc(titel)}</h3><span class="small muted">${rows.length} Starter</span></div>${hinweis||""}
+    return `<div class="card"><div class="flex"><h3 class="sp" style="margin:0">${mitKal?esc(UI.kal||"–")+" · ":""}${esc(titel)}</h3><span class="small muted">${rows.length} Starter</span></div>${hinweis||""}
     <div class="tw"><table><thead><tr><th>Rang</th><th>Name</th><th>Verein</th><th>Klasse</th><th class="n">Durchgänge</th>${multi?'<th class="n">Bestes</th>':""}<th class="n">Bester Durchgang</th><th class="n">X</th><th>Serien (bester Durchgang)</th></tr></thead><tbody>
     ${rows.map(r=>`<tr><td><span class="rank r${r.rang<=3?r.rang:""}">${r.rang}</span></td>
       <td><b>${esc(sName(r.s))}</b>${r.unvollstaendig?' <span class="pill w" title="Noch nicht genug Durchgänge">offen</span>':""}</td>
@@ -457,8 +468,8 @@ function vDurchgang(b){
     <div style="flex:0 0 auto"><button class="b" id="dgStart">Durchgang starten</button></div></div>
     <p class="small muted">Die Namen ordnest du im Durchgang direkt je Stand zu – jederzeit, auch erst nach der letzten Serie.</p></div>
     ${offen.length?`<div class="card"><h3 style="margin-top:0">Laufende Durchgänge</h3>${offen.map(d=>`<div class="flex" style="padding:8px 0;border-bottom:1px solid var(--line)"><div class="sp"><b>${dgTitel(b,d.nr)}</b> · ${fmtD(d.datum)} · ${uhr(d.start)} – Stände ${d.rows.map(r=>esc(r.stand||"?")).join(", ")}
-      <div class="small muted">nächste: ${esc((b.serien[naechsteSerie(b,d.rows)]||{}).label||"")} (Serie ${naechsteSerie(b,d.rows)+1} von ${b.serien.length})</div></div><button class="b sm" data-dgopen="${d.id}">Fortsetzen</button></div>`).join("")}</div>`:""}
-    ${fertig.length?`<div class="card"><h3 style="margin-top:0">Abgeschlossene Durchgänge (${fertig.length})</h3>${fertig.map(d=>`<div class="flex" style="padding:6px 0;border-bottom:1px solid var(--line)"><div class="sp small"><b>${dgTitel(b,d.nr)}</b> · ${fmtD(d.datum)} · ${uhr(d.start)} – ${d.rows.map(r=>`${esc(r.stand)}: ${r.sid&&S.schuetzen[r.sid]?esc(sName(S.schuetzen[r.sid])):"<i>ohne Namen</i>"} <b>${num(summe(r))}</b>`).join(" · ")}</div><button class="b g sm" data-dgopen="${d.id}">Öffnen</button></div>`).join("")}</div>`:""}`;
+      <div class="small muted">nächste: ${esc((b.serien[naechsteSerie(b,d.rows)]||{}).label||"")} (Serie ${naechsteSerie(b,d.rows)+1} von ${b.serien.length})</div></div><button class="b sm" data-dgopen="${d.id}">Fortsetzen</button><button class="b d sm" data-dgloesch="${d.id}" style="margin-left:6px">LÖSCHEN</button></div>`).join("")}</div>`:""}
+    ${fertig.length?`<div class="card"><h3 style="margin-top:0">Abgeschlossene Durchgänge (${fertig.length})</h3>${fertig.map(d=>`<div class="flex" style="padding:6px 0;border-bottom:1px solid var(--line)"><div class="sp small"><b>${dgTitel(b,d.nr)}</b> · ${fmtD(d.datum)} · ${uhr(d.start)} – ${d.rows.map(r=>`${esc(r.stand)}: ${r.sid&&S.schuetzen[r.sid]?esc(sName(S.schuetzen[r.sid])):"<i>ohne Namen</i>"} <b>${num(summe(r))}</b>`).join(" · ")}</div><button class="b g sm" data-dgopen="${d.id}">Öffnen</button><button class="b d sm" data-dgloesch="${d.id}" style="margin-left:6px">LÖSCHEN</button></div>`).join("")}</div>`:""}`;
   }
   const n=b.serien.length;
   let si=UI.dgSerie;if(si==null||si<0||si>=n)si=naechsteSerie(b,dg.rows);
@@ -469,15 +480,16 @@ function vDurchgang(b){
   <label style="margin-top:12px">Serie wählen</label>
   <div class="chips">${b.serien.map((s,i)=>{const done=dg.rows.every(r=>r.serien[i]!=null&&r.serien[i]!=="");return `<button class="chip ${i===si?"on":""}" data-dgserie="${i}">${done?"✓ ":""}${esc(s.label)}</button>`}).join("")}</div>
   <div class="flex" style="margin:6px 0 4px"><div class="total" style="font-size:24px">Serie ${si+1} von ${n}: ${esc(b.serien[si].label)}</div><span class="muted small">${b.serien[si].schuss||5} Schuss · je Schuss ${Number(b.serien[si].minRing)<0?`${b.serien[si].minRing} bis ${b.serien[si].maxRing||10} Punkte`:`max. ${b.serien[si].maxRing||10} Ringe`}</span></div>
-  <div class="tw"><table><thead><tr><th>Stand</th><th>Name</th><th class="dg-bisher">Bisher</th><th>Schüsse ${esc(b.serien[si].label)}</th><th class="n">Summe</th><th></th></tr></thead><tbody>
+  <div class="tw"><table><thead><tr><th>Stand</th><th>Name</th><th>Kaliber</th><th class="dg-bisher">Bisher</th><th>Schüsse ${esc(b.serien[si].label)}</th><th class="n">Summe</th><th></th></tr></thead><tbody>
   ${dg.rows.map((r,ix)=>{const vorher=r.serien.slice(0,n).map((v,i)=>i===si?"□":serAnzeige(v,(r.xs||[])[i])).join(" ");
     return `<tr><td style="font-size:20px;font-weight:700">${esc(r.stand||"–")}</td>
     <td>${namensZelle(b,r)}</td>
+    <td style="white-space:nowrap">${["GK","KK"].map(k=>`<label class="kalbox ${r.kal===k?"on":""}"><input type="checkbox" data-kal="${k}" data-rid="${r.id}" ${r.kal===k?"checked":""}> ${k}</label>`).join("")}</td>
     <td class="ser-small dg-bisher">${vorher}</td>
     <td><div class="flex" style="gap:4px;flex-wrap:nowrap">${(()=>{const sch=Number(b.serien[si].schuss)||5;const alt=String((r.schuss||[])[si]||"").split(",");
-      return Array.from({length:sch},(_,k)=>`<input type="text" autocomplete="off" class="shot" id="sh_${r.id}_${si}_${k}" data-rid="${r.id}" data-k="${k}" inputmode="${Number(b.serien[si].minRing)<0?"text":"numeric"}" maxlength="3" value="${esc(alt[k]||"")}" style="text-align:center;font-size:19px;padding:8px 2px;width:46px">`).join("")})()}
-      <button class="b g" data-rowx="${r.id}" data-val="x" tabindex="-1" title="X (Innenzehner = 10) in das aktuelle bzw. nächste freie Feld" style="padding:8px 12px;margin-left:4px">x</button>
-      <button class="b d" data-rowx="${r.id}" data-val="F" tabindex="-1" title="F (Fehlschuss = 0) in das aktuelle bzw. nächste freie Feld" style="padding:8px 12px;margin-left:14px;font-weight:700">F</button>
+      return Array.from({length:sch},(_,k)=>`<input type="text" autocomplete="off" class="shot" id="sh_${r.id}_${si}_${k}" data-rid="${r.id}" data-k="${k}" inputmode="${Number(b.serien[si].minRing)<0?"text":"numeric"}" maxlength="3" value="${esc(String(alt[k]||"").replace(/^x$/,"X").replace(/^f$/,"F"))}" style="text-align:center;font-size:19px;padding:8px 2px;width:42px">`).join("")})()}
+      <button class="b g" data-rowx="${r.id}" data-val="X" tabindex="-1" title="X (Innenzehner = 10) in das aktuelle bzw. nächste freie Feld" style="padding:8px 12px;margin-left:8px;font-weight:700">X</button>
+      <button class="b d" data-rowx="${r.id}" data-val="F" tabindex="-1" title="F (Fehlschuss = 0) in das aktuelle bzw. nächste freie Feld" style="padding:8px 12px;margin-left:28px;font-weight:700">F</button>
       ${Number(b.serien[si].minRing)<0?`<button class="b" data-minus="${r.id}" tabindex="-1" title="Minus: Vorzeichen im aktuellen bzw. nächsten freien Feld umschalten" style="padding:8px 14px;margin-left:14px;font-weight:700;background:#7a3e9d;border-color:#7a3e9d">−</button>`:""}</div>
       ${r.serien[si]!=null&&r.serien[si]!==""&&!(r.schuss||[])[si]?`<div class="small muted">gespeichert: ${serAnzeige(r.serien[si],(r.xs||[])[si])} (ohne Einzelschüsse)</div>`:""}</td>
     <td class="n"><b id="dgsum_${r.id}">${num(summe(r))}</b><div class="small" style="color:var(--acc)" id="dgx_${r.id}">${xSumme(r)?xSumme(r)+"x":""}</div></td>
@@ -549,8 +561,8 @@ function zuordnen(bid,rid,sid){
 }
 function tblAntritte(b,list){
   list=[...list].sort((x,y)=>(y.datum||"").localeCompare(x.datum||"")||(y.erstellt||"").localeCompare(x.erstellt||""));
-  return `<div class="tw"><table><thead><tr><th>Datum</th><th>Durchgang</th><th>Stand</th><th>Name</th><th>Serien</th><th class="n">Gesamt</th><th>Notiz</th><th></th></tr></thead><tbody>
-  ${list.map(r=>`<tr><td>${fmtD(r.datum)}</td><td>${r.dg?(dgNr(b,r.dg)||"–"):"–"}</td><td>${esc(r.stand||"–")}</td><td>${namensZelle(b,r)}</td><td class="ser-small">${(r.serien||[]).map((v,i)=>serAnzeige(v,(r.xs||[])[i])).join(" · ")}</td>
+  return `<div class="tw"><table><thead><tr><th>Datum</th><th>Durchgang</th><th>Stand</th><th>Kal.</th><th>Name</th><th>Serien</th><th class="n">Gesamt</th><th>Notiz</th><th></th></tr></thead><tbody>
+  ${list.map(r=>`<tr><td>${fmtD(r.datum)}</td><td>${r.dg?(dgNr(b,r.dg)||"–"):"–"}</td><td>${esc(r.stand||"–")}</td><td>${r.kal?`<span class="pill">${r.kal}</span>`:"–"}</td><td>${namensZelle(b,r)}</td><td class="ser-small">${(r.serien||[]).map((v,i)=>serAnzeige(v,(r.xs||[])[i])).join(" · ")}</td>
   <td class="n"><b>${num(summe(r))}</b>${xSumme(r)?` <span class="small" style="color:var(--acc)">${xSumme(r)}x</span>`:""}${komplett(b,r)?"":`<div><span class="pill w">läuft ${r.serien.filter(v=>v!=null&&v!=="").length}/${b.serien.length}</span></div>`}</td><td class="small">${esc(r.notiz||"")}</td>
   <td class="n" style="white-space:nowrap"><button class="b g sm" data-editerg="${r.id}">Bearbeiten</button> <button class="b d sm" data-delerg="${r.id}">Löschen</button></td></tr>`).join("")}
   </tbody></table></div>`;
@@ -604,7 +616,7 @@ function vBewerbForm(b){
   <div><label>Max. Durchgänge je Person</label><input type="number" id="fMaxA" min="0" value="${esc(b.maxAntritte||"")}" placeholder="unbegrenzt"></div></div>
   <h3>Ergebnisliste (Druck &amp; Excel)</h3>
   <div class="row"><div><label>Kategorie / Tabellenkopf</label><input id="fKat" value="${esc(b.kategorie||"")}" placeholder="z. B. Großkaliber"></div>
-  <div><label>Bewerbsleiter (Autor)</label><input id="fLeiter" value="${esc(b.leiter||"")}"></div>
+  <div><label>Bewerbsleiter</label><input id="fLeiter" value="${esc(b.leiter||"")}"></div>
   <div><label>Schützenmeister</label><input id="fSM" value="${esc(b.schuetzenmeister||"")}"></div></div>
   <div class="row" style="margin-top:10px"><div><label>Wettkampfleiterteam (durch Beistrich getrennt)</label><input id="fTeam" value="${esc(b.team||"")}"></div></div>
   <div class="row" style="margin-top:10px"><div><label>Beschreibung für Seite 1 – „# Überschrift“, „- Punkt“, „-- Unterpunkt“</label><textarea id="fBeschr" rows="7" placeholder="# Ziel&#10;-- Selbst kreierte Scheibe mit Wendeanlage&#10;# Waffen&#10;- Waffenart&#10;-- Alle Großkaliber-Kurzwaffen">${esc(b.beschreibung||"")}</textarea></div></div>
@@ -703,17 +715,19 @@ async function kopieren(text,msg){try{await navigator.clipboard.writeText(text);
   modal(`<h3 style="margin-top:0">Zum Kopieren markieren</h3><textarea rows="12" id="cpT">${esc(text)}</textarea><div class="right"><button class="b" id="cpX">Schließen</button></div>`,()=>{$("#cpT").select();$("#cpX").onclick=closeModal})}}
 const csvCell=v=>{v=String(v??"");return /[;"\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
 function wertungCSV(b){
-  const rows=rangiere(auswertung(b));
-  const head=["Rang","Nachname","Vorname","Verein","Jahrgang","Geschlecht","Klasse","Durchgänge","Wertung","X",...(b.serien||[]).map(s=>s.label)];
+  const kals=kaliberListe(b),mitKal=!(kals.length===1&&kals[0]==="");
+  const head=["Kaliber","Rang","Nachname","Vorname","Verein","Jahrgang","Geschlecht","Klasse","Durchgänge","Wertung","X",...(b.serien||[]).map(s=>s.label)];
   const lines=[head.join(";")];
-  rows.forEach(r=>lines.push([r.rang,r.s?.nachname,r.s?.vorname,r.s?.verein,r.s?.geburtsjahr,r.geschlecht,KLASSEN[r.klasse],r.antritte,num(r.wert,MODUS==="avg"),r.xs||0,...(r.tb||[]).map(v=>num(v))].map(csvCell).join(";")));
+  kals.forEach(k=>rangiere(auswertung(b,mitKal?k:undefined)).forEach(r=>lines.push([mitKal?(k||"–"):"",r.rang,r.s?.nachname,r.s?.vorname,r.s?.verein,r.s?.geburtsjahr,r.geschlecht,KLASSEN[r.klasse],r.antritte,num(r.wert,MODUS==="avg"),r.xs||0,...(r.tb||[]).map(v=>num(v))].map(csvCell).join(";"))));
   return "﻿"+lines.join("\r\n");
 }
 function wertungText(b){
-  const all=rangiere(auswertung(b));let t=`${b.name}\n${fmtD(b.start)}${b.ende?" – "+fmtD(b.ende):""}\n`;
+  let t=`${b.name}\n${fmtD(b.start)}${b.ende?" – "+fmtD(b.ende):""}\n`;
+  const kals=kaliberListe(b),mitKal=!(kals.length===1&&kals[0]==="");
+  kals.forEach(k=>{const all=rangiere(auswertung(b,mitKal?k:undefined));if(mitKal)t+=`\n=== ${KAL[k].toUpperCase()} ===\n`;
   const block=(titel,rows)=>{rows=rangiere(rows);if(!rows.length)return;t+=`\n${titel}\n`;rows.forEach(r=>t+=`${String(r.rang).padStart(3)}. ${sName(r.s)}${r.s?.verein?" ("+r.s.verein+")":""} – ${num(r.wert,MODUS==="avg")}${r.xs?" ("+r.xs+"x)":""}\n`)};
   block("GESAMT",all);
-  KLASSEN_ORD.forEach(k=>block(KLASSEN[k].toUpperCase(),all.filter(r=>r.klasse===k)));
+  KLASSEN_ORD.forEach(kl=>block(KLASSEN[kl].toUpperCase(),all.filter(r=>r.klasse===kl)));});
   return t;
 }
 
@@ -725,10 +739,10 @@ function trefferZaehlen(b,r){ // aus den Einzelschüssen; null wenn nicht für a
     t.split(",").forEach(s=>{s=s.trim().toLowerCase();if(s==="x")c.X++;else if(s==="f")c.F++;else{const v=Number(s);if(v===0||isNaN(v))c.F++;else c[String(v)]=(c[String(v)]||0)+1}})}
   return c;
 }
-function listeDaten(b){
-  const rows=rangiere(auswertung(b));
+function listeDaten(b,kal){
+  const rows=rangiere(auswertung(b,kal));
   const maxDG=Math.max(1,...rows.map(r=>r.antritte));
-  const chrono=sid=>Object.values(S.ergebnisse).filter(r=>r.bewerbId===b.id&&r.sid===sid&&komplett(b,r)).sort((x,y)=>(x.datum||"").localeCompare(y.datum||"")||(x.erstellt||"").localeCompare(y.erstellt||""));
+  const chrono=sid=>Object.values(S.ergebnisse).filter(r=>r.bewerbId===b.id&&r.sid===sid&&komplett(b,r)&&(kal===undefined||(r.kal||"")===kal)).sort((x,y)=>(x.datum||"").localeCompare(y.datum||"")||(x.erstellt||"").localeCompare(y.erstellt||""));
   const note=(a,o)=>a.xs!==o.xs?(a.xs>o.xs?"Mehr X":"Weniger X"):(()=>{const c=tiebreakCmp(a.tb,o.tb);return c<0?"Bessere Schlussserien":c>0?"Schwächere Schlussserien":"Gleichstand"})();
   rows.forEach((r,i)=>{
     r.dgs=chrono(r.sid);
@@ -740,7 +754,7 @@ function listeDaten(b){
     r.anm=anm.join("; ");
   });
   const details=[];
-  rows.forEach(r=>r.dgs.forEach((e,k)=>details.push({name:sName(r.s),dg:k+1,c:trefferZaehlen(b,e),total:e.total,xs:xSumme(e),notiz:e.notiz||""})));
+  rows.forEach(r=>r.dgs.forEach((e,k)=>details.push({name:sName(r.s),kal:e.kal||"",dg:k+1,c:trefferZaehlen(b,e),total:e.total,xs:xSumme(e),notiz:e.notiz||""})));
   details.sort((x,y)=>y.total-x.total||y.xs-x.xs||x.name.localeCompare(y.name));
   const daten=[...new Set(Object.values(S.ergebnisse).filter(r=>r.bewerbId===b.id&&komplett(b,r)).map(r=>r.datum).filter(Boolean))].sort();
   const klassen=KLASSEN_ORD.filter(k=>rows.some(r=>r.klasse===k)).map(k=>({k,rows:rangiere(rows.filter(r=>r.klasse===k))}));
@@ -906,37 +920,46 @@ function xlsxDatei(sheets){
   return zipStore(files);
 }
 function excelListe(b){
-  const L=listeDaten(b),kat=b.kategorie||(PROGRAMME[b.programm]?.name||"Ergebnisliste"),avg=MODUS==="avg";
+  const kals=kaliberListe(b),mitKal=!(kals.length===1&&kals[0]==="");
+  const blocks=kals.map(k=>({k,L:listeDaten(b,mitKal?k:undefined)}));
+  const L0=listeDaten(b),avg=MODUS==="avg";
+  const maxDG=Math.max(1,...blocks.map(x=>x.L.maxDG));
+  const katName=k=>mitKal?KAL[k]+(b.kategorie?" – "+b.kategorie:""):(b.kategorie||(PROGRAMME[b.programm]?.name||"Ergebnisliste"));
   const val=v=>avg?Math.round(v*10)/10:v;
-  // Blatt 1: Ergebnisliste
-  const nc=L.maxDG+5,R=[],M=[],H={};
+  // Blatt 1: Ergebnisliste (je Kaliber ein Block)
+  const nc=maxDG+5,R=[],M=[],H={};
   R.push([{v:"Ergebnisliste vom Bewerb „"+b.name+"“",s:1}]);H[0]=24;
-  R.push([{v:`Der Bewerb fand ${datumText(L.daten)||fmtD(b.start)} statt${L.anzDG?` (${L.anzDG} Durchgänge)`:""}. ${(b.serien||[]).length} Serien à ${(b.serien||[])[0]?.schuss||5} Schuss, maximal ${maxGesamt(b)} Punkte. Wertung: ${MODI[MODUS]||""}.`,s:2}]);M.push(`A2:${colName(nc-1)}2`);H[1]=32;
+  R.push([{v:`Der Bewerb fand ${datumText(L0.daten)||fmtD(b.start)} statt${L0.anzDG?` (${L0.anzDG} Durchgänge)`:""}. ${(b.serien||[]).length} Serien à ${(b.serien||[])[0]?.schuss||5} Schuss, maximal ${maxGesamt(b)} Punkte. Wertung: ${MODI[MODUS]||""}.${mitKal?" Großkaliber (GK) und Kleinkaliber (KK) werden getrennt gewertet.":""}`,s:2}]);M.push(`A2:${colName(nc-1)}2`);H[1]=32;
+  blocks.forEach(({k,L})=>{
+    R.push([]);
+    const k0=R.length;R.push([{v:katName(k),s:12},...Array(nc-1).fill({v:"",s:12})]);M.push(`A${k0+1}:${colName(nc-1)}${k0+1}`);
+    R.push([{v:"Rang",s:3},{v:"Name",s:3},...Array.from({length:maxDG},(_,i)=>({v:(i+1)+". DG",s:12})),{v:wertKopf(b).replace("-",""),s:12},{v:"X",s:12},{v:"Anmerkung",s:3}]);H[R.length-1]=30;
+    L.rows.forEach((r,i)=>{const alt=i%2===0;const C=alt?7:5,Lf=alt?6:4,U=alt?9:8;
+      R.push([{v:r.rang,s:C},{v:sName(r.s),s:Lf},...Array.from({length:maxDG},(_,x)=>{const e=r.dgs[x];return e?{v:e.total,s:x===r.bestIdx?U:C}:{v:"---",s:C}}),{v:val(r.wert),s:C},{v:r.xs||0,s:C},{v:r.anm,s:Lf}])});
+  });
   R.push([]);
-  const k0=R.length;R.push([{v:kat,s:12},...Array(nc-1).fill({v:"",s:12})]);M.push(`A${k0+1}:${colName(nc-1)}${k0+1}`);
-  R.push([{v:"Rang",s:3},{v:"Name",s:3},...Array.from({length:L.maxDG},(_,i)=>({v:(i+1)+". DG",s:12})),{v:wertKopf(b).replace("-",""),s:12},{v:"X",s:12},{v:"Anmerkung",s:3}]);H[R.length-1]=30;
-  L.rows.forEach((r,i)=>{const alt=i%2===0;const C=alt?7:5,Lf=alt?6:4,U=alt?9:8;
-    R.push([{v:r.rang,s:C},{v:sName(r.s),s:Lf},...Array.from({length:L.maxDG},(_,k)=>{const e=r.dgs[k];return e?{v:e.total,s:k===r.bestIdx?U:C}:{v:"---",s:C}}),{v:val(r.wert),s:C},{v:r.xs||0,s:C},{v:r.anm,s:Lf}])});
   R.push([{v:"DG",s:10},{v:"Durchgang",s:10}]);R.push([{v:"---",s:10},{v:"Kein weiterer Durchgang absolviert",s:10}]);
   R.push([{v:"123",s:10},{v:"Unterstrichen = bestes Ergebnis aus den Durchgängen",s:10}]);R.push([{v:"X",s:10},{v:"Innenzehner",s:10}]);
+  if(mitKal){R.push([{v:"GK / KK",s:10},{v:"Großkaliber / Kleinkaliber – getrennte Wertung",s:10}])}
   R.push([]);R.push([{v:"Hinweis:",s:11}]);R.push([{v:"Bei Punktegleichstand entscheidet die Anzahl der X (Innenzehner), danach die Summe der letzten beiden Serien, dann der beiden davor usw.",s:0}]);
-  const sh1={name:"Ergebnisliste",rows:R,merges:M,heights:H,autor:b.leiter,cols:[7,30,...Array(L.maxDG).fill(9),11,6,34]};
-  // Blatt 2: Klassen
+  const sh1={name:"Ergebnisliste",rows:R,merges:M,heights:H,autor:b.leiter,cols:[7,30,...Array(maxDG).fill(9),11,6,34]};
+  // Blatt 2: Klassen (je Kaliber)
   const R2=[[{v:"Wertung nach Klassen – "+b.name,s:1}],[]],M2=[];
-  L.klassen.forEach(kl=>{const r0=R2.length;R2.push([{v:KLASSEN[kl.k],s:12},{v:"",s:12},{v:"",s:12},{v:"",s:12},{v:"",s:12},{v:"",s:12}]);M2.push(`A${r0+1}:F${r0+1}`);
+  blocks.forEach(({k,L})=>L.klassen.forEach(kl=>{const r0=R2.length;R2.push([{v:(mitKal?k+" · ":"")+KLASSEN[kl.k],s:12},{v:"",s:12},{v:"",s:12},{v:"",s:12},{v:"",s:12},{v:"",s:12}]);M2.push(`A${r0+1}:F${r0+1}`);
     R2.push([{v:"Rang",s:3},{v:"Name",s:3},{v:"Verein",s:3},{v:"Jg.",s:12},{v:wertKopf(b).replace("-",""),s:12},{v:"X",s:12}]);
     kl.rows.forEach((r,i)=>{const alt=i%2===0,C=alt?7:5,Lf=alt?6:4;R2.push([{v:r.rang,s:C},{v:sName(r.s),s:Lf},{v:r.s?.verein||"",s:Lf},{v:Number(r.s?.geburtsjahr)||"",s:C},{v:val(r.wert),s:C},{v:r.xs||0,s:C}])});
-    R2.push([])});
+    R2.push([])}));
   const sh2={name:"Klassen",rows:R2,merges:M2,autor:b.leiter,cols:[7,30,24,8,12,6]};
-  // Blatt 3: Trefferdetail
-  const dc=trefferSpalten(L.details);const sh3m=[];
-  const R3=[[{v:"Trefferdetailauswertung – "+b.name,s:1}],[],[{v:"Name",s:3},{v:"DG",s:12},...dc.map(c=>({v:c,s:12})),{v:"Gesamt",s:12},{v:"Anmerkung",s:3}]];
-  L.details.forEach((d,i)=>{const alt=i%2===0,C=alt?7:5,Lf=alt?6:4;R3.push([{v:d.name,s:Lf},{v:d.dg,s:C},...dc.map(c=>({v:d.c?(d.c[c]||0):"–",s:C})),{v:d.total,s:C},{v:d.notiz,s:Lf}])});
-  R3.push([]);R3.push([{v:"DG = Durchgang · X = Innenzehner · F = Fehlschuss · negative Werte = Minuspunkte · – = keine Einzelschüsse erfasst",s:10}]);
+  // Blatt 3: Trefferdetail (mit Kaliber-Spalte)
+  const details=blocks.flatMap(x=>x.L.details);
+  const dc=trefferSpalten(details);const sh3m=[];
+  const R3=[[{v:"Trefferdetailauswertung – "+b.name,s:1}],[],[{v:"Name",s:3},...(mitKal?[{v:"Kal",s:12}]:[]),{v:"DG",s:12},...dc.map(c=>({v:c,s:12})),{v:"Gesamt",s:12},{v:"Anmerkung",s:3}]];
+  details.forEach((d,i)=>{const alt=i%2===0,C=alt?7:5,Lf=alt?6:4;R3.push([{v:d.name,s:Lf},...(mitKal?[{v:d.kal||"–",s:C}]:[]),{v:d.dg,s:C},...dc.map(c=>({v:d.c?(d.c[c]||0):"–",s:C})),{v:d.total,s:C},{v:d.notiz,s:Lf}])});
+  R3.push([]);R3.push([{v:`DG = Durchgang · X = Innenzehner · F = Fehlschuss${mitKal?" · Kal = Kaliber (GK/KK)":""} · negative Werte = Minuspunkte · – = keine Einzelschüsse erfasst`,s:10}]);
   if(b.leiter||b.schuetzenmeister){R3.push([]);R3.push([]);R3.push([{v:b.leiter||"",s:0},null,null,null,null,null,null,{v:b.schuetzenmeister||"",s:0}]);R3.push([{v:b.leiter?"Bewerbsleiter":"",s:10},null,null,null,null,null,null,{v:b.schuetzenmeister?"Schützenmeister":"",s:10}])}
   if(b.waffg!==false){R3.push([]);R3.push([{v:"Hinweis zur waffenrechtlichen Relevanz",s:11}]);R3.push([{v:"Diese Ergebnisliste dient zum Nachweis des ständigen Gebrauches als Sportwaffe gemäß §5, Abs. 2 der 2. Waffengesetz-Durchführungsverordnung zum Waffengesetz 1996.",s:2}]);
-    const ri=R3.length;sh3m.push(`A${ri}:${colName(dc.length+3)}${ri}`)}
-  const sh3={name:"Trefferdetail",rows:R3,merges:sh3m,heights:{[R3.length-1]:32},autor:b.leiter,cols:[28,5,...dc.map(()=>4.5),8,22]};
+    const ri=R3.length;sh3m.push(`A${ri}:${colName(dc.length+3+(mitKal?1:0))}${ri}`)}
+  const sh3={name:"Trefferdetail",rows:R3,merges:sh3m,heights:{[R3.length-1]:32},autor:b.leiter,cols:[28,...(mitKal?[5]:[]),5,...dc.map(()=>4.5),8,22]};
   [sh1,sh2,sh3].forEach(sh=>{ // 4 Zeilen Platz für Logo + Vereinsname
     const nc=Math.max(...sh.rows.map(r=>(r||[]).length),sh.cols.length);
     sh.rows=[[],[],[],[],...sh.rows];
@@ -990,6 +1013,10 @@ function bind(){
     on("eAbbr","click",()=>{UI.editErg=null;render()});
     onAll("[data-erfmode]","click",e=>{UI.erfMode=e.dataset.erfmode;render()});
     const focusDg=()=>{const f=[...document.querySelectorAll(".shot")].find(i=>i.value==="")||document.querySelector(".shot");if(f){f.focus();f.scrollIntoView({block:"center"})}};
+    onAll("[data-dgloesch]","click",e=>{const d=durchgaenge(b).find(x=>x.id===e.dataset.dgloesch);if(!d)return;
+      const namen=d.rows.map(r=>`Stand ${esc(r.stand||"?")}: ${r.sid&&S.schuetzen[r.sid]?esc(sName(S.schuetzen[r.sid])):"<i>ohne Namen</i>"}${komplett(b,r)?" – "+num(summe(r))+" Ringe":""}`).join("<br>");
+      bestaetigen(`<b style="color:var(--warn);font-size:17px">⚠ Achtung: Du bist dabei, einen Durchgang zu löschen!</b><br><br><b>${dgTitel(b,d.nr)}</b> · ${fmtD(d.datum)} · ${uhr(d.start)}<br><span class="small">${namen}</span><br><br>${d.rows.length===1?"Das Ergebnis dieses Durchgangs wird":`Alle ${d.rows.length} Ergebnisse dieses Durchgangs werden`} endgültig gelöscht und aus der Wertung entfernt. Die nachfolgenden Durchgänge werden neu durchnummeriert. Das kann nicht rückgängig gemacht werden.`,
+        ()=>{const ob=batch;batch=true;d.rows.forEach(r=>del("ergebnisse",r.id));batch=ob;if(backend!=="db")saveLocal();if(UI.dg===d.id)UI.dg=null;render(true);toast(`Durchgang ${d.nr} gelöscht.`)},"Ja, Durchgang löschen")});
     onAll("[data-dgopen]","click",e=>{UI.dg=e.dataset.dgopen;UI.dgSerie=null;render();focusDg()});
     on("dgBack","click",()=>{UI.dg=null;UI.dgSerie=null;render()});
     onAll("[data-dgserie]","click",e=>{UI.dgSerie=Number(e.dataset.dgserie);render();focusDg()});
@@ -1010,7 +1037,7 @@ function bind(){
       return {warn:`„${i.value}“ ist kein gültiger Wert`}};
     const rowState=rid=>{const ins=shots.filter(i=>i.dataset.rid===rid);let v=0,x=0,f=0,warn=[];
       ins.forEach(i=>{const s=shotInfo(i);i.classList.toggle("bad",!!s.warn);if(s.warn)warn.push({k:+i.dataset.k,msg:s.warn});else if(!s.leer){f++;v+=s.v;x+=s.x}});
-      return {ins,v,x,f,n:ins.length,warn,vals:ins.map(i=>{const t=i.value.trim().toLowerCase();return t==="f"?"F":t})}};
+      return {ins,v,x,f,n:ins.length,warn,vals:ins.map(i=>{const t=i.value.trim().toLowerCase();return t==="f"?"F":t==="x"?"X":t})}};
     const dgUpdate=()=>{const msgs=[];
       [...new Set(shots.map(i=>i.dataset.rid))].forEach(rid=>{const r=S.ergebnisse[rid];if(!r)return;const st=rowState(rid);
         const ser=[...r.serien],xs=[...(r.xs||[])];if(st.f){ser[UI.dgAktiv]=st.v;xs[UI.dgAktiv]=st.x}
@@ -1025,13 +1052,14 @@ function bind(){
       i.addEventListener("input",()=>{const n=dgUpdate();const v=i.value.trim().toLowerCase();
         const s=shotInfo(i);if(s.warn){toast("⚠ "+s.warn+" – höchstens "+(Number(b.serien[UI.dgAktiv].maxRing)||10)+" Ringe pro Schuss!");return}
         if(v==="f"&&i.value!=="F")i.value="F";
+        if(v==="x"&&i.value!=="X")i.value="X";
         if(v==="x"||v==="f"||/^-?[02-9]$/.test(v)||/^-?10$/.test(v))weiterInZeile(i); // nach „1“ bzw. „-1“ auf die 0 warten
         });
       i.addEventListener("keydown",ev=>{if(ev.key==="Enter"){ev.preventDefault();weiter(i)}else if(ev.key==="Backspace"&&i.value===""){const ix=shots.indexOf(i);if(ix>0){ev.preventDefault();shots[ix-1].focus()}}});
     });
     document.querySelectorAll("[data-rowx]").forEach(bt=>{bt.addEventListener("mousedown",e=>e.preventDefault());bt.addEventListener("click",()=>{
       const row=shots.filter(i=>i.dataset.rid===bt.dataset.rowx);let t=row.find(i=>i.id===UI.lastShot)||row.find(i=>i.value==="")||row[row.length-1];
-      if(!t)return;t.value=bt.dataset.val||"x";t.dataset.dirty="1";dgUpdate();t.focus();weiterInZeile(t)})});
+      if(!t)return;t.value=bt.dataset.val||"X";t.dataset.dirty="1";dgUpdate();t.focus();weiterInZeile(t)})});
     document.querySelectorAll("[data-minus]").forEach(bt=>{bt.addEventListener("mousedown",e=>e.preventDefault());bt.addEventListener("click",()=>{
       const row=shots.filter(i=>i.dataset.rid===bt.dataset.minus);const t=row.find(i=>i.id===UI.lastShot)||row.find(i=>i.value==="")||row[row.length-1];if(!t)return;
       const v=t.value.trim();t.value=v.startsWith("-")?v.slice(1):(/^(x|f)$/i.test(v)?"-":"-"+v);t.dataset.dirty="1";dgUpdate();t.focus();
@@ -1042,6 +1070,11 @@ function bind(){
       const si=UI.dgAktiv,n=b.serien.length;
       const rids=[...new Set(shots.map(i=>i.dataset.rid))];
       const halb=rids.map(rid=>({r:S.ergebnisse[rid],st:rowState(rid)})).filter(o=>o.r&&o.st.f>0&&o.st.f<o.st.n);
+      { // Kaliber (GK/KK) muss vor jedem Speichern gewählt sein
+        const ohneKal=rids.map(rid=>S.ergebnisse[rid]).filter(r=>r&&r.kal!=="GK"&&r.kal!=="KK");
+        if(ohneKal.length){const box=$("#dgWarnName");if(box)box.innerHTML=`<div class="notice"><b>⚠ Kaliber fehlt – Serie wurde nicht gespeichert:</b><br>${ohneKal.map(r=>`Stand ${esc(r.stand||"?")}${r.sid&&S.schuetzen[r.sid]?" ("+esc(sName(S.schuetzen[r.sid]))+")":""}: bitte <b>GK</b> oder <b>KK</b> ankreuzen.`).join("<br>")}</div>`;
+          toast("⚠ Nicht gespeichert – bitte bei jedem Stand GK oder KK auswählen.");const c=document.querySelector(`[data-kal][data-rid="${ohneKal[0].id}"]`);if(c)c.closest("label").scrollIntoView({block:"center"});return}
+      }
       if(si===n-1){ // letzte Serie: nur speichern, wenn jeder Stand einen Namen hat
         const ohne=rids.map(rid=>S.ergebnisse[rid]).filter(r=>r&&!(r.sid&&S.schuetzen[r.sid]));
         if(ohne.length){const box=$("#dgWarnName");if(box)box.innerHTML=`<div class="notice"><b>⚠ Namen fehlen – Serie wurde nicht gespeichert:</b><br>${ohne.map(r=>`Stand ${esc(r.stand||"?")}: noch kein Name zugeordnet.`).join("<br>")}<br>Bitte zuerst die Namen zuordnen und dann „Serie ${si+1} speichern“ tippen.</div>`;
@@ -1066,7 +1099,9 @@ function bind(){
     on("dgAdd","click",()=>{const st=$("#dgAddStand").value.trim();if(!st)return;const dg=durchgaenge(b).find(d=>d.id===UI.dg);if(!dg)return;
       if(dg.rows.some(r=>String(r.stand)===st)){toast("Stand "+st+" ist schon im Durchgang.");return}
       put("ergebnisse",{id:uid(),bewerbId:b.id,sid:"",stand:st,dg:dg.id,datum:dg.datum,serien:Array(b.serien.length).fill(null),total:0,notiz:"",erstellt:dg.start||new Date().toISOString()})});
-    onAll("[data-dgdel]","click",e=>del("ergebnisse",e.dataset.dgdel));
+    onAll("[data-dgdel]","click",e=>{const r=S.ergebnisse[e.dataset.dgdel];if(!r)return;
+      bestaetigen(`<b style="color:var(--warn);font-size:17px">⚠ Stand ${esc(r.stand||"?")} wirklich aus dem Durchgang löschen?</b><br><br>${r.sid&&S.schuetzen[r.sid]?`Zugeordnet: <b>${esc(sName(S.schuetzen[r.sid]))}</b><br>`:""}Bereits eingetippte, noch nicht gespeicherte Schüsse dieses Stands gehen verloren.`,
+        ()=>del("ergebnisse",r.id),"Ja, Stand löschen")});
     on("eSave","click",()=>{clearDirty();
       const stand=$("#eStand").value.trim();
       let sid=$("#eSid").value;
@@ -1088,6 +1123,8 @@ function bind(){
     onAll("[data-editerg]","click",e=>{const r0=S.ergebnisse[e.dataset.editerg];
       if(r0&&r0.dg&&!komplett(b,r0)){UI.tab="erfassung";UI.erfMode="serie";UI.dg=r0.dg;UI.dgSerie=null;render();window.scrollTo(0,0);return}
       UI.editErg=e.dataset.editerg;UI.erfassSid=(S.ergebnisse[e.dataset.editerg]||{}).sid||"";UI.tab="erfassung";render();window.scrollTo(0,0)});
+    onAll("[data-kal]","change",e=>{const r=S.ergebnisse[e.dataset.rid];if(!r)return;const kal=e.checked?e.dataset.kal:"";if((r.kal||"")===kal)return;put("ergebnisse",{...r,kal})});
+    onAll("[data-kalfilter]","click",e=>{UI.kal=e.dataset.kalfilter;render()});
     onAll("[data-namechg]","click",e=>{const r=S.ergebnisse[e.dataset.namechg];if(!r)return;
       bestaetigen(`Stand ${esc(r.stand||"?")} ist <b>${esc(sName(S.schuetzen[r.sid]))}</b> zugeordnet. Möchtest du den Namen wirklich ändern?`,()=>{UI.nameEdit=r.id;render(true);const s=document.querySelector(`[data-assign="${r.id}"]`);s&&s.focus()},"Ja, Namen ändern","");});
     onAll("[data-namecancel]","click",()=>{UI.nameEdit=null;render(true)});
@@ -1157,7 +1194,7 @@ function bindForm(b){
 
 
 /* ================= Offline-App (PWA) ================= */
-const APP_VERSION="cd2d12b3";
+const APP_VERSION="0dbc112f";
 if("serviceWorker" in navigator&&location.protocol.startsWith("http")){
   window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").then(r=>{
     r.addEventListener("updatefound",()=>{const n=r.installing;n&&n.addEventListener("statechange",()=>{if(n.state==="installed"&&navigator.serviceWorker.controller)toast("Neue App-Version geladen – beim nächsten Öffnen aktiv.")})})
