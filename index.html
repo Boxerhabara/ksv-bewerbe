@@ -243,6 +243,17 @@ function wiederherstellen(data){
   }finally{batch=false;if(backend!=="db")saveLocal();render(true)}
   return st;
 }
+function datenErsetzen(daten){ // ersetzt ALLE Daten dieses Geräts
+  batch=true;
+  try{COLLS.forEach(k=>{const neu=daten[k]||{};Object.keys(S[k]).forEach(id=>{if(!neu[id])delRaw(k,id)});Object.values(neu).forEach(o=>{if(o&&o.id)put(k,{...o},true)})})}
+  finally{batch=false;if(backend!=="db")saveLocal();render()}
+}
+function backupLaden(data){
+  pruefeDatei(data);
+  try{localStorage.setItem("ksv_vor_backup",JSON.stringify({zeit:new Date().toISOString(),daten:S}))}catch(e){}
+  datenErsetzen(data);
+  try{localStorage.setItem("ksv_letztes_backup",JSON.stringify({zeit:new Date().toISOString(),von:data.geraet||"",datei:data.exportiert||""}))}catch(e){}
+}
 function abgleich(data){
   pruefeDatei(data);
   const st={neu:0,akt:0,del:0,pers:0,alt:0};
@@ -904,18 +915,18 @@ function vDaten(){
   <div class="card"><p>Speicherort: <b>${backend==="db"?"Cloud (geteilt zwischen allen Geräten, die diese Seite öffnen)":"Nur dieser Browser (lokal)"}</b></p>
   <p class="small muted">${n[0]} Bewerbe · ${n[1]} Personen · ${n[2]} Ergebnisse</p>
   ${backend==="db"&&localHasData()?`<div class="info">In diesem Browser liegen noch lokal gespeicherte Daten. <button class="b sm" id="migr">In die Cloud übernehmen</button></div>`:""}
-  <h3>Abgleich mit anderen Geräten &amp; Sicherung</h3>
-  <p class="small muted">Eine Abgleich-Datei enthält alle Daten dieses Geräts inkl. Löschungen – sie ist gleichzeitig deine Sicherung.
-  Beim Laden wird zusammengeführt: Neues kommt dazu, bei Änderungen gewinnt der <b>neuere</b> Stand, Gelöschtes wird auch hier gelöscht, gleiche Personen werden nicht doppelt angelegt. Es geht nichts verloren.</p>
+  <h3>💾 Backup – Daten zwischen PC und iPad mitnehmen</h3>
+  <p class="small" style="margin-top:-4px"><b>So geht’s:</b> Am Gerät, an dem du gerade fertig bist, <b>„Backup erstellen“</b> → Datei ans andere Gerät schicken (AirDrop, Mail, USB-Stick, Google Drive …) → dort <b>„Backup laden“</b>. Danach hat das andere Gerät <b>exakt denselben Stand</b> und du arbeitest dort weiter. Später genauso wieder zurück.</p>
   <div class="row"><div style="flex:0 1 260px"><label>Name dieses Geräts (erscheint im Dateinamen)</label><input id="geraetName" value="${esc(geraetName())}" placeholder="z. B. iPad Roman"></div></div>
-  ${(()=>{try{const l=JSON.parse(localStorage.getItem("ksv_letzter_abgleich")||"null");return l?`<p class="small">Letzter Abgleich: <b>${new Date(l.zeit).toLocaleString("de-AT")}</b>${l.von?` mit „${esc(l.von)}“`:""}</p>`:""}catch(e){return ""}})()}
-  <div class="flex" style="margin-top:8px"><button class="b" id="expJson">⬆ Abgleich-Datei erstellen</button><button class="b g" id="cpJson">In Zwischenablage</button></div>
-  <div style="margin-top:12px"><label>⬇ Abgleich-Datei vom anderen Gerät laden</label><input type="file" id="impFile" style="max-width:360px"></div>
-  <h3>Alte Sicherung wiederherstellen</h3>
-  <p class="small muted">Für ältere Abgleich-Dateien (z. B. eine frühere Sicherung vom PC): Alles aus der Datei wird übernommen – <b>auch Einträge, die hier inzwischen gelöscht oder geändert wurden</b>. Was hier neu dazugekommen ist und nicht in der Datei steht, bleibt erhalten.</p>
-  <div><input type="file" id="restFile" style="max-width:360px"></div>
-  <p class="small muted" style="margin-top:8px"><b>So geht’s:</b> Gerät A „Abgleich-Datei erstellen“ → Datei per AirDrop, Mail oder Google Drive an Gerät B → dort laden. Danach umgekehrt (B erstellen → A laden), dann haben beide denselben Stand.
-  Tipp: Einen gemeinsamen Bewerb nur auf <b>einem</b> Gerät anlegen und zuerst abgleichen – erst dann auf beiden erfassen.</p>
+  ${(()=>{try{const l=JSON.parse(localStorage.getItem("ksv_letztes_backup")||"null");return l?`<p class="small">Zuletzt geladenes Backup: <b>${l.von?"„"+esc(l.von)+"“, ":""}${l.datei?new Date(l.datei).toLocaleString("de-AT"):""}</b> (geladen am ${new Date(l.zeit).toLocaleString("de-AT")})</p>`:""}catch(e){return ""}})()}
+  <div class="flex" style="margin-top:8px;gap:10px;flex-wrap:wrap"><button class="b" id="expJson" style="font-size:17px;padding:12px 22px">⬆ Backup erstellen</button>
+  <button class="b g" id="backupBtn" style="font-size:17px;padding:12px 22px">⬇ Backup laden</button><input type="file" id="backupFile" style="display:none"></div>
+  <p class="small muted" style="margin-top:6px">„Backup laden“ <b>ersetzt alle Daten auf diesem Gerät</b> durch den Stand aus der Datei. Vorher kommt eine Abfrage, und das Laden kann danach einmal rückgängig gemacht werden.</p>
+  ${(()=>{try{const v=JSON.parse(localStorage.getItem("ksv_vor_backup")||"null");return v?`<div class="info small">Vor dem letzten „Backup laden“ (${new Date(v.zeit).toLocaleString("de-AT")}) wurde der alte Stand dieses Geräts aufgehoben. <button class="b g sm" id="backupUndo">↶ Rückgängig machen</button></div>`:""}catch(e){return ""}})()}
+  <details style="margin-top:14px"><summary class="small" style="cursor:pointer"><b>Erweitert:</b> Zusammenführen statt ersetzen (nur wenn auf zwei Geräten gleichzeitig gearbeitet wurde)</summary>
+  <p class="small muted">Beim Zusammenführen wird nichts ersetzt: Neues kommt dazu, bei Änderungen gewinnt der neuere Stand, Gelöschtes wird auch hier gelöscht. Eine ältere Datei bringt deshalb meist nichts – dafür „Backup laden“ verwenden.</p>
+  <div style="margin-top:8px"><label>⬇ Datei zusammenführen</label><input type="file" id="impFile" style="max-width:360px"></div>
+  <div style="margin-top:8px"><button class="b g sm" id="cpJson">Daten in Zwischenablage kopieren</button></div></details>
   <h3>Schützen exportieren</h3>
   <p class="small muted">Alle Personen mit allen Angaben (Name, Geburtsjahr, Alter, Geschlecht, Klasse, Verein, Notiz, Bewerbe, Anzahl Ergebnisse) als Excel-Datei.</p>
   <div class="flex"><button class="b" id="xlsxSchuetzen">📊 Alle Schützen als Excel</button></div>
@@ -1484,7 +1495,7 @@ function bind(){
   // Daten
   on("geraetName","change",e=>{try{localStorage.setItem("ksv_geraet",e.target.value.trim())}catch(x){}toast("Gerätename gespeichert.")});
   on("expJson","click",()=>{const g=(geraetName()||"Geraet").replace(/[^\wäöüÄÖÜß-]+/g,"_");const d=new Date(),p=n=>String(n).padStart(2,"0");
-    anbieten(`KSV_Abgleich_${g}_${today()}_${p(d.getHours())}-${p(d.getMinutes())}.json`,JSON.stringify(abgleichDaten(),null,1),"application/json")});
+    anbieten(`KSV_Backup_${g}_${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}_${p(d.getHours())}-${p(d.getMinutes())}.json`,JSON.stringify(abgleichDaten(),null,1),"application/json")});
   on("cpJson","click",()=>kopieren(JSON.stringify(abgleichDaten())));
   on("impFile","change",e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{
     let j;try{j=JSON.parse(rd.result)}catch(x){toast("Datei konnte nicht gelesen werden.");return}
@@ -1492,7 +1503,7 @@ function bind(){
       modal(`<h3 style="margin-top:0">Abgleich abgeschlossen ✓</h3><p>${j.geraet?`Datei von „${esc(j.geraet)}“${j.exportiert?" vom "+new Date(j.exportiert).toLocaleString("de-AT"):""}`:"Datei geladen"}.</p>
         <table><tbody><tr><td>Neu übernommen</td><td class="n"><b>${s.neu}</b></td></tr><tr><td>Aktualisiert (neuerer Stand)</td><td class="n"><b>${s.akt}</b></td></tr>
         <tr><td>Gelöscht (wie am anderen Gerät)</td><td class="n"><b>${s.del}</b></td></tr><tr><td>Gleiche Personen zusammengeführt</td><td class="n"><b>${s.pers}</b></td></tr></tbody></table>
-        ${s.alt?`<div class="notice small">${s.alt} Einträge aus der Datei waren <b>älter</b> als hier (oder wurden hier gelöscht) und wurden deshalb <b>nicht</b> übernommen. Willst du eine alte Sicherung zurückholen, nimm unten „Alte Sicherung wiederherstellen“.</div>`:""}<p class="small muted">Damit das andere Gerät auch deinen Stand hat: hier „Abgleich-Datei erstellen“ und dort laden.</p><div class="right"><button class="b" id="abgOk">OK</button></div>`,()=>{$("#abgOk").onclick=closeModal});
+        ${s.alt?`<div class="notice small">${s.alt} Einträge aus der Datei waren <b>älter</b> als hier (oder wurden hier gelöscht) und wurden deshalb <b>nicht</b> übernommen. Willst du den Stand aus der Datei komplett übernehmen, nimm oben „Backup laden“.</div>`:""}<div class="right"><button class="b" id="abgOk">OK</button></div>`,()=>{$("#abgOk").onclick=closeModal});
     }catch(x){console.error(x);toast("Abgleich fehlgeschlagen: "+(x.message||"unbekannter Fehler"))}
     e.target.value=""};rd.readAsText(f)});
   on("restFile","change",e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{
@@ -1502,6 +1513,20 @@ function bind(){
       try{const s=wiederherstellen(j);modal(`<h3 style="margin-top:0">Sicherung wiederhergestellt ✓</h3><table><tbody><tr><td>Bewerbe</td><td class="n"><b>${s.bewerbe}</b></td></tr><tr><td>Personen</td><td class="n"><b>${s.schuetzen}</b></td></tr><tr><td>Ergebnisse</td><td class="n"><b>${s.ergebnisse}</b></td></tr><tr><td>Gelöschte Einträge zurückgeholt</td><td class="n"><b>${s.zurueck}</b></td></tr></tbody></table><div class="right"><button class="b" id="abgOk">OK</button></div>`,()=>{$("#abgOk").onclick=closeModal})}
       catch(x){console.error(x);toast("Wiederherstellen fehlgeschlagen: "+(x.message||"Fehler"))}},"Ja, wiederherstellen"," ")};
     rd.readAsText(f)});
+  on("backupBtn","click",()=>$("#backupFile").click());
+  on("backupFile","change",e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{
+    e.target.value="";let j;try{j=JSON.parse(rd.result);pruefeDatei(j)}catch(x){toast("Das ist keine KSV-Bewerbe-Backup-Datei.");return}
+    const n=(o,k)=>Object.keys(o[k]||{}).length;
+    bestaetigen(`<b style="color:var(--warn);font-size:17px">⚠ Backup laden?</b><br><br>Backup ${j.geraet?`von „${esc(j.geraet)}“ `:""}${j.exportiert?"vom <b>"+new Date(j.exportiert).toLocaleString("de-AT")+"</b>":""}<br>
+      <table style="margin:8px 0"><tbody><tr><td></td><td class="n"><b>im Backup</b></td><td class="n">jetzt hier</td></tr>
+      <tr><td>Bewerbe</td><td class="n"><b>${n(j,"bewerbe")}</b></td><td class="n">${n(S,"bewerbe")}</td></tr>
+      <tr><td>Personen</td><td class="n"><b>${n(j,"schuetzen")}</b></td><td class="n">${n(S,"schuetzen")}</td></tr>
+      <tr><td>Ergebnisse</td><td class="n"><b>${n(j,"ergebnisse")}</b></td><td class="n">${n(S,"ergebnisse")}</td></tr></tbody></table>
+      <b>Alle Daten auf diesem Gerät werden durch das Backup ersetzt.</b> Danach kannst du es einmal rückgängig machen.`,()=>{
+      try{backupLaden(j);toast("Backup geladen ✓");}catch(x){console.error(x);toast("Backup laden fehlgeschlagen: "+(x.message||"Fehler"))}},"Ja, Backup laden"," ")};
+    rd.readAsText(f)});
+  on("backupUndo","click",()=>{let v=null;try{v=JSON.parse(localStorage.getItem("ksv_vor_backup")||"null")}catch(e){}if(!v)return;
+    bestaetigen("Den Stand von vor dem letzten „Backup laden“ wiederherstellen?",()=>{datenErsetzen(v.daten);try{localStorage.removeItem("ksv_vor_backup")}catch(e){}render();toast("Rückgängig gemacht ✓")},"Ja, rückgängig"," ")});
   on("xlsxSchuetzen","click",()=>{try{const d=new Date(),p=n=>String(n).padStart(2,"0");anbieten(`KSV_Schuetzen_${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}.xlsx`,excelSchuetzen(),"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")}catch(e){console.error(e);toast("Excel-Export fehlgeschlagen.")}});
   on("csvPImp","click",()=>{const t=$("#csvP").value.trim();if(!t)return;let n=0;const doppelt=[];
     const ob=batch;batch=true;
@@ -1552,7 +1577,7 @@ function bindForm(b){
 
 
 /* ================= Offline-App (PWA) ================= */
-const APP_VERSION="cd05329a";
+const APP_VERSION="9f7083ee";
 if("serviceWorker" in navigator&&location.protocol.startsWith("http")){
   window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").then(r=>{
     r.addEventListener("updatefound",()=>{const n=r.installing;n&&n.addEventListener("statechange",()=>{if(n.state==="installed"&&navigator.serviceWorker.controller)toast("Neue App-Version geladen – beim nächsten Öffnen aktiv.")})})
