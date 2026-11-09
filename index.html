@@ -126,7 +126,8 @@ const PROGRAMME={
   "3030voll":{name:"FFWGK 30/30 – 60 Schuss Vollprogramm",serien:[...rep(6,"150 s"),...rep(6,"20 s")]},
   "3030halb":{name:"FFWGK 30/30 – 30 Schuss Halbprogramm",serien:[...rep(3,"150 s"),...rep(3,"20 s")]},
   "2020":{name:"FFWGK 20/20 – 40 Schuss Vollprogramm",serien:[...rep(4,"150 s Präz."),...rep(4,"20 s")]},
-  "frei":{name:"Freies Programm",serien:null}
+  "frei":{name:"Freies Programm",serien:null},
+  "spass":{name:"Spaß-Programm (auch Minuspunkte)",serien:null}
 };
 function rep(n,l){return Array.from({length:n},(_,i)=>({label:l+" "+(i+1),schuss:5,maxRing:10}))}
 
@@ -280,22 +281,23 @@ function klasseVon(b,sid){
 function parseSerie(str,se,zehntel){
   let s=String(str??"").trim().toLowerCase();if(!s)return {leer:true,ok:true};
   s=s.replace(/(\d),(\d)/g,"$1.$2");
-  const maxR=Number(se.maxRing)||10,sch=Number(se.schuss)||5,mx=maxSerie(se);
+  const maxR=Number(se.maxRing)||10,minR=Math.min(0,Number(se.minRing)||0),sch=Number(se.schuss)||5,mx=maxSerie(se),mn=minSerie(se);
   const parts=s.split(/[\s,;+\/]+/).filter(Boolean);let v=0,x=0;
   if(parts.length>1){
     if(parts.length>sch)return {ok:false};
-    for(const p of parts){if(/^x+$/.test(p)){x+=p.length;v+=maxR*p.length}else if(/^f+$/.test(p)){}else if(/^\d+(\.\d+)?$/.test(p)&&+p<=maxR){v+=+p}else return {ok:false}}
+    for(const p of parts){if(/^x+$/.test(p)){x+=p.length;v+=maxR*p.length}else if(/^f+$/.test(p)){}else if(/^-?\d+(\.\d+)?$/.test(p)&&+p<=maxR&&+p>=minR){v+=+p}else return {ok:false}}
   }else{
-    const m=parts[0].match(/^(x*)(\d+(?:\.\d+)?)?(x*)$/);if(!m)return {ok:false};
+    const m=parts[0].match(/^(x*)(-?\d+(?:\.\d+)?)?(x*)$/);if(!m)return {ok:false};
     x=m[1].length+m[3].length;v=m[2]!=null?+m[2]:maxR*x;
   }
   v=Math.round(v*10)/10;
-  const ok=v>=0&&v<=mx&&x<=sch&&x*maxR<=v&&(zehntel||Number.isInteger(v));
+  const ok=v>=mn&&v<=mx&&x<=sch&&(minR<0||x*maxR<=v)&&(zehntel||Number.isInteger(v));
   return {ok,v,x};
 }
 function serText(v,x){return v==null||v===""?"":String(v).replace(".",",")+(x?"x".repeat(x):"")}
 function serAnzeige(v,x){return v==null||v===""?"·":num(v)+(x?`<sup style="color:var(--acc);font-weight:700">${x}x</sup>`:"")}
 function xSumme(r){return (r.xs||[]).reduce((a,v)=>a+(Number(v)||0),0)}
+function minSerie(se){return (Number(se.schuss)||5)*Math.min(0,Number(se.minRing)||0)}
 function maxSerie(se){return (Number(se.schuss)||5)*(Number(se.maxRing)||10)}
 function maxGesamt(b){return (b.serien||[]).reduce((a,s)=>a+maxSerie(s),0)}
 function tiebreakCmp(a,b){ // a,b Serienarrays – FFWGK 8.2.1: Summe der letzten beiden Serien, dann davor ...
@@ -466,16 +468,17 @@ function vDurchgang(b){
   <div class="flex"><button class="b g" id="dgBack" style="font-size:18px;padding:12px 24px;font-weight:600;border-width:2px">← Übersicht</button><h3 class="sp" style="margin:0">${dgTitel(b,dg.nr)} <span class="muted small" style="font-weight:400">· ${fmtD(dg.datum)} · ${uhr(dg.start)}</span></h3>${dg.fertig?'<span class="pill">vollständig ✓</span>':'<span class="pill w">läuft</span>'}</div>
   <label style="margin-top:12px">Serie wählen</label>
   <div class="chips">${b.serien.map((s,i)=>{const done=dg.rows.every(r=>r.serien[i]!=null&&r.serien[i]!=="");return `<button class="chip ${i===si?"on":""}" data-dgserie="${i}">${done?"✓ ":""}${esc(s.label)}</button>`}).join("")}</div>
-  <div class="flex" style="margin:6px 0 4px"><div class="total" style="font-size:24px">Serie ${si+1} von ${n}: ${esc(b.serien[si].label)}</div><span class="muted small">${b.serien[si].schuss||5} Schuss · je Schuss max. ${b.serien[si].maxRing||10} Ringe</span></div>
+  <div class="flex" style="margin:6px 0 4px"><div class="total" style="font-size:24px">Serie ${si+1} von ${n}: ${esc(b.serien[si].label)}</div><span class="muted small">${b.serien[si].schuss||5} Schuss · je Schuss ${Number(b.serien[si].minRing)<0?`${b.serien[si].minRing} bis ${b.serien[si].maxRing||10} Punkte`:`max. ${b.serien[si].maxRing||10} Ringe`}</span></div>
   <div class="tw"><table><thead><tr><th>Stand</th><th>Name</th><th class="dg-bisher">Bisher</th><th>Schüsse ${esc(b.serien[si].label)}</th><th class="n">Summe</th><th></th></tr></thead><tbody>
   ${dg.rows.map((r,ix)=>{const vorher=r.serien.slice(0,n).map((v,i)=>i===si?"□":serAnzeige(v,(r.xs||[])[i])).join(" ");
     return `<tr><td style="font-size:20px;font-weight:700">${esc(r.stand||"–")}</td>
     <td>${namensZelle(b,r)}</td>
     <td class="ser-small dg-bisher">${vorher}</td>
     <td><div class="flex" style="gap:4px;flex-wrap:nowrap">${(()=>{const sch=Number(b.serien[si].schuss)||5;const alt=String((r.schuss||[])[si]||"").split(",");
-      return Array.from({length:sch},(_,k)=>`<input type="text" autocomplete="off" class="shot" id="sh_${r.id}_${si}_${k}" data-rid="${r.id}" data-k="${k}" inputmode="numeric" maxlength="3" value="${esc(alt[k]||"")}" style="text-align:center;font-size:19px;padding:8px 2px;width:46px">`).join("")})()}
+      return Array.from({length:sch},(_,k)=>`<input type="text" autocomplete="off" class="shot" id="sh_${r.id}_${si}_${k}" data-rid="${r.id}" data-k="${k}" inputmode="${Number(b.serien[si].minRing)<0?"text":"numeric"}" maxlength="3" value="${esc(alt[k]||"")}" style="text-align:center;font-size:19px;padding:8px 2px;width:46px">`).join("")})()}
       <button class="b g" data-rowx="${r.id}" data-val="x" tabindex="-1" title="X (Innenzehner = 10) in das aktuelle bzw. nächste freie Feld" style="padding:8px 12px;margin-left:4px">x</button>
-      <button class="b d" data-rowx="${r.id}" data-val="F" tabindex="-1" title="F (Fehlschuss = 0) in das aktuelle bzw. nächste freie Feld" style="padding:8px 12px;margin-left:14px;font-weight:700">F</button></div>
+      <button class="b d" data-rowx="${r.id}" data-val="F" tabindex="-1" title="F (Fehlschuss = 0) in das aktuelle bzw. nächste freie Feld" style="padding:8px 12px;margin-left:14px;font-weight:700">F</button>
+      ${Number(b.serien[si].minRing)<0?`<button class="b" data-minus="${r.id}" tabindex="-1" title="Minus: Vorzeichen im aktuellen bzw. nächsten freien Feld umschalten" style="padding:8px 14px;margin-left:14px;font-weight:700;background:#7a3e9d;border-color:#7a3e9d">−</button>`:""}</div>
       ${r.serien[si]!=null&&r.serien[si]!==""&&!(r.schuss||[])[si]?`<div class="small muted">gespeichert: ${serAnzeige(r.serien[si],(r.xs||[])[si])} (ohne Einzelschüsse)</div>`:""}</td>
     <td class="n"><b id="dgsum_${r.id}">${num(summe(r))}</b><div class="small" style="color:var(--acc)" id="dgx_${r.id}">${xSumme(r)?xSumme(r)+"x":""}</div></td>
     <td class="n">${r.serien.every(v=>v==null||v==="")?`<button class="b d sm" data-dgdel="${r.id}" title="Stand aus dem Durchgang entfernen">×</button>`:""}</td></tr>`}).join("")}
@@ -483,7 +486,7 @@ function vDurchgang(b){
   <div id="dgWarn"></div><div id="dgWarnName"></div>
   <div class="flex" style="margin-top:12px"><div class="flex sp"><input id="dgAddStand" type="number" min="1" placeholder="Stand Nr." style="width:110px"><button class="b g sm" id="dgAdd">+ Stand hinzufügen</button></div>
   <button class="b" id="dgSave" style="font-size:16px;padding:10px 20px">Serie ${si+1} speichern${si<n-1?" → weiter":""}</button></div>
-  <p class="small muted">Eingabe je Schuss: 0–10, x (Innenzehner = 10 Ringe) oder F (Fehlschuss = 0). Nach jedem Wert springt der Cursor zum nächsten Schuss desselben Teilnehmers (nach „1“ wartet er auf die 0). Werte über 10 werden als Warnung markiert und nicht gespeichert. Mit Enter oder Tab geht es weiter zum nächsten Stand. Gespeichert wird erst mit „Serie … speichern“. Leere Felder bleiben offen und können später nachgetragen werden. Bereits gespeicherte Serien lassen sich über „Serie wählen“ korrigieren.</p>
+  <p class="small muted">Eingabe je Schuss: 0–10, x (Innenzehner = 10 Ringe) oder F (Fehlschuss = 0)${Number(b.serien[si].minRing)<0?`, im Spaß-Programm auch Minuspunkte bis ${b.serien[si].minRing} (lila „−“-Taste schaltet das Vorzeichen um)`:""}. Nach jedem Wert springt der Cursor zum nächsten Schuss desselben Teilnehmers (nach „1“ wartet er auf die 0). Werte über 10 werden als Warnung markiert und nicht gespeichert. Mit Enter oder Tab geht es weiter zum nächsten Stand. Gespeichert wird erst mit „Serie … speichern“. Leere Felder bleiben offen und können später nachgetragen werden. Bereits gespeicherte Serien lassen sich über „Serie wählen“ korrigieren.</p>
   </div>`;
 }
 function vKomplett(b){
@@ -590,11 +593,12 @@ function vBewerbForm(b){
   <div><label>Jahr des Bewerbs</label><input type="number" id="fJahr" value="${esc(b.jahr||"")}" placeholder="Jahr des Beginns"></div></div>
   <div class="row" style="margin-top:10px"><div style="flex:2 1 300px"><label>Programm</label><select id="fProg">${Object.entries(PROGRAMME).map(([k,p])=>`<option value="${k}" ${b.programm===k?"selected":""}>${p.name}</option>`).join("")}</select></div>
 </div>
-  <div id="freiBox" style="${b.programm==="frei"?"":"display:none"}"><h3>Serien (freies Programm)</h3>
+  <div id="freiBox" style="${b.programm==="frei"||b.programm==="spass"?"":"display:none"}"><h3 id="freiTitel">${b.programm==="spass"?"Serien (Spaß-Programm)":"Serien (freies Programm)"}</h3>
     <div class="row"><div><label>Anzahl Serien</label><input type="number" id="fAnz" min="1" max="40" value="${ser.length||4}"></div>
     <div><label>Schuss je Serie</label><input type="number" id="fSchuss" min="1" value="${ser[0]?.schuss||5}"></div>
-    <div><label>Max. Ring je Schuss</label><input type="number" id="fMaxRing" min="1" value="${ser[0]?.maxRing||10}"></div>
-    <div><label>Bezeichnung</label><input id="fLabel" value="${esc(b.programm==="frei"&&ser[0]?.label?ser[0].label.replace(/\s*\d+$/,""):"Serie")}"></div></div></div>
+    <div><label>Größter Wert je Schuss</label><input type="number" id="fMaxRing" min="1" value="${ser[0]?.maxRing||10}"></div>
+    <div id="minBox" style="${b.programm==="spass"?"":"display:none"}"><label>Kleinster Wert je Schuss (Minuspunkte)</label><input type="number" id="fMinRing" max="0" value="${ser[0]?.minRing!=null&&ser[0].minRing<0?ser[0].minRing:-10}"></div>
+    <div><label>Bezeichnung</label><input id="fLabel" value="${esc((b.programm==="frei"||b.programm==="spass")&&ser[0]?.label?ser[0].label.replace(/\s*\d+$/,""):"Serie")}"></div></div></div>
   <h3>Umlauf / Wertungsmodus</h3>
   <div class="row"><div style="flex:2 1 280px"><label>Was zählt bei mehreren Durchgängen?</label><select id="fModus">${["best"].map(k=>`<option value="${k}" selected>${MODI[k]}</option>`).join("")}</select></div>
   <div><label>Max. Durchgänge je Person</label><input type="number" id="fMaxA" min="0" value="${esc(b.maxAntritte||"")}" placeholder="unbegrenzt"></div></div>
@@ -718,7 +722,7 @@ const VEREIN={name:"KSV-Siemens Sportschützen",adresse:"Wielandweg 25, 1220 Wie
 function trefferZaehlen(b,r){ // aus den Einzelschüssen; null wenn nicht für alle Serien vorhanden
   const n=(b.serien||[]).length,c={X:0,10:0,9:0,8:0,7:0,6:0,5:0,4:0,3:0,2:0,1:0,F:0};
   for(let i=0;i<n;i++){const t=(r.schuss||[])[i];if(!t)return null;
-    t.split(",").forEach(s=>{s=s.trim().toLowerCase();if(s==="x")c.X++;else if(s==="f")c.F++;else{const v=Number(s);if(v===0||isNaN(v))c.F++;else if(c[v]!==undefined)c[v]++}})}
+    t.split(",").forEach(s=>{s=s.trim().toLowerCase();if(s==="x")c.X++;else if(s==="f")c.F++;else{const v=Number(s);if(v===0||isNaN(v))c.F++;else c[String(v)]=(c[String(v)]||0)+1}})}
   return c;
 }
 function listeDaten(b){
@@ -745,7 +749,9 @@ function listeDaten(b){
 }
 function trefferSpalten(details){ // 4er bis 1er nur, wenn mindestens ein solcher Treffer vorkommt
   const nied=["4","3","2","1"].filter(k=>details.some(d=>d.c&&d.c[k]>0));
-  return ["X","10","9","8","7","6","5",...nied,"F"];
+  const minus=[...new Set(details.flatMap(d=>d.c?Object.keys(d.c).filter(k=>Number(k)<0&&d.c[k]>0):[]))].sort((a,b)=>Number(b)-Number(a)); // -1, -2, …
+  const hoch=[...new Set(details.flatMap(d=>d.c?Object.keys(d.c).filter(k=>Number(k)>10&&d.c[k]>0):[]))].sort((a,b)=>Number(b)-Number(a));
+  return ["X",...hoch,"10","9","8","7","6","5",...nied,"F",...minus];
 }
 function datumText(d){if(!d.length)return "";if(d.length===1)return "am "+fmtD(d[0]);if(d.length===2)return `am ${fmtD(d[0])} und am ${fmtD(d[1])}`;
   if(d.length<=4)return "am "+d.slice(0,-1).map(fmtD).join(", ")+" und am "+fmtD(d[d.length-1]);return `von ${fmtD(d[0])} bis ${fmtD(d[d.length-1])} (${d.length} Termine)`}
@@ -795,7 +801,7 @@ table.d tr{break-inside:avoid}
 <div class="fuss"><div>${autor?"Autor: "+esc(autor):""}</div><div class="m">${esc(VEREIN.name)}<br>${esc(VEREIN.adresse)}<br>Internet: ${esc(VEREIN.web)}</div><div class="r">Datum: ${heute}</div></div>
 
 <table class="lay"><thead><tr><td><div class="sp-k"></div></td></tr></thead><tfoot><tr><td><div class="sp-f"></div></td></tr></tfoot><tbody><tr><td><h1>Ergebnisliste vom Bewerb „${esc(b.name)}“</h1>
-<p>Der Bewerb fand ${datumText(L.daten)||fmtD(b.start)} statt${L.anzDG?` (${L.anzDG} Durchgang${L.anzDG===1?"":"e"})`:""}${b.programm!=="frei"?" und wurde in Anlehnung an das Regelwerk der FFWGK (15. Ausgabe, 01/2025) durchgeführt":""}.</p>
+<p>Der Bewerb fand ${datumText(L.daten)||fmtD(b.start)} statt${L.anzDG?` (${L.anzDG} Durchgang${L.anzDG===1?"":"e"})`:""}${b.programm!=="frei"&&b.programm!=="spass"?" und wurde in Anlehnung an das Regelwerk der FFWGK (15. Ausgabe, 01/2025) durchgeführt":""}.</p>
 <h2 class="sec">Durchführung des Bewerbs</h2>
 <div class="li1">Wettkampf</div>
 <div class="li2">${se.length} Serien à ${se[0]?.schuss||5} Schuss</div><div class="li2">Gesamt ${sch} Schuss</div>
@@ -813,7 +819,7 @@ ${team.length?`<h2 class="sec">Wettkampfleiterteam</h2>${team.map(t=>`<div class
 ${L.klassen.length>1?`<table class="lay"><thead><tr><td><div class="sp-k"></div></td></tr></thead><tfoot><tr><td><div class="sp-f"></div></td></tr></tfoot><tbody><tr><td><h2 class="sec">Wertung nach Klassen</h2>${L.klassen.map(kl=>`<table class="d" style="min-width:120mm"><thead><tr><th colspan="5" class="c">${esc(KLASSEN[kl.k])}</th></tr><tr><th>Rang</th><th>Name</th><th>Verein</th><th class="c">${wertKopf(b)}</th><th class="c">X</th></tr></thead><tbody>${kl.rows.map((r,i)=>`<tr class="${i%2?"":"alt"}"><td class="c">${r.rang}</td><td>${esc(sName(r.s))}</td><td>${esc(r.s?.verein||"")}</td><td class="c">${num(r.wert,MODUS==="avg")}</td><td class="c">${r.xs||0}</td></tr>`).join("")}</tbody></table>`).join("")}</td></tr></tbody></table>`:""}
 <table class="lay"><thead><tr><td><div class="sp-k"></div></td></tr></thead><tfoot><tr><td><div class="sp-f"></div></td></tr></tfoot><tbody><tr><td><h2 class="sec">Trefferdetailauswertung</h2>
 <table class="d"><thead><tr><th>Name</th><th class="c">DG</th>${dc.map(c=>`<th class="c">${c}</th>`).join("")}<th class="c">Gesamt</th><th>Anmerkung</th></tr></thead>
-<tbody>${L.details.map((d,i)=>`<tr class="${i%2?"":"alt"}"><td>${esc(d.name)}</td><td class="c">${d.dg}</td>${dc.map(c=>`<td class="c">${d.c?d.c[c]:"–"}</td>`).join("")}<td class="c">${num(d.total)}</td><td>${esc(d.notiz)}</td></tr>`).join("")}</tbody></table>
+<tbody>${L.details.map((d,i)=>`<tr class="${i%2?"":"alt"}"><td>${esc(d.name)}</td><td class="c">${d.dg}</td>${dc.map(c=>`<td class="c">${d.c?(d.c[c]||0):"–"}</td>`).join("")}<td class="c">${num(d.total)}</td><td>${esc(d.notiz)}</td></tr>`).join("")}</tbody></table>
 <table class="leg"><tr><td>DG</td><td>Durchgang</td></tr><tr><td>X</td><td>Innenzehner</td></tr><tr><td>F</td><td>Fehlschuss</td></tr><tr><td>–</td><td>keine Einzelschüsse erfasst</td></tr></table>
 ${(b.leiter||b.schuetzenmeister)?`<div class="unter">${b.leiter?`<div>${esc(b.leiter)}<br>Bewerbsleiter</div>`:""}${b.schuetzenmeister?`<div>${esc(b.schuetzenmeister)}<br>Schützenmeister</div>`:""}</div>`:""}
 ${b.waffg!==false?`<h2 class="sec" style="margin-top:30px">Hinweis zur waffenrechtlichen Relevanz</h2><p>Diese Ergebnisliste dient zum Nachweis des ständigen Gebrauches als Sportwaffe gemäß §5, Abs. 2 der 2. Waffengesetz-Durchführungsverordnung zum Waffengesetz 1996.</p>`:""}
@@ -925,8 +931,8 @@ function excelListe(b){
   // Blatt 3: Trefferdetail
   const dc=trefferSpalten(L.details);const sh3m=[];
   const R3=[[{v:"Trefferdetailauswertung – "+b.name,s:1}],[],[{v:"Name",s:3},{v:"DG",s:12},...dc.map(c=>({v:c,s:12})),{v:"Gesamt",s:12},{v:"Anmerkung",s:3}]];
-  L.details.forEach((d,i)=>{const alt=i%2===0,C=alt?7:5,Lf=alt?6:4;R3.push([{v:d.name,s:Lf},{v:d.dg,s:C},...dc.map(c=>({v:d.c?d.c[c]:"–",s:C})),{v:d.total,s:C},{v:d.notiz,s:Lf}])});
-  R3.push([]);R3.push([{v:"DG = Durchgang · X = Innenzehner · F = Fehlschuss · – = keine Einzelschüsse erfasst",s:10}]);
+  L.details.forEach((d,i)=>{const alt=i%2===0,C=alt?7:5,Lf=alt?6:4;R3.push([{v:d.name,s:Lf},{v:d.dg,s:C},...dc.map(c=>({v:d.c?(d.c[c]||0):"–",s:C})),{v:d.total,s:C},{v:d.notiz,s:Lf}])});
+  R3.push([]);R3.push([{v:"DG = Durchgang · X = Innenzehner · F = Fehlschuss · negative Werte = Minuspunkte · – = keine Einzelschüsse erfasst",s:10}]);
   if(b.leiter||b.schuetzenmeister){R3.push([]);R3.push([]);R3.push([{v:b.leiter||"",s:0},null,null,null,null,null,null,{v:b.schuetzenmeister||"",s:0}]);R3.push([{v:b.leiter?"Bewerbsleiter":"",s:10},null,null,null,null,null,null,{v:b.schuetzenmeister?"Schützenmeister":"",s:10}])}
   if(b.waffg!==false){R3.push([]);R3.push([{v:"Hinweis zur waffenrechtlichen Relevanz",s:11}]);R3.push([{v:"Diese Ergebnisliste dient zum Nachweis des ständigen Gebrauches als Sportwaffe gemäß §5, Abs. 2 der 2. Waffengesetz-Durchführungsverordnung zum Waffengesetz 1996.",s:2}]);
     const ri=R3.length;sh3m.push(`A${ri}:${colName(dc.length+3)}${ri}`)}
@@ -998,9 +1004,9 @@ function bind(){
       UI.dg=dgid;UI.dgSerie=0;render();focusDg();
     });
     const shots=[...document.querySelectorAll(".shot")];
-    const shotInfo=i=>{const v=i.value.trim().toLowerCase();const se=b.serien[UI.dgAktiv]||{};const mr=Number(se.maxRing)||10;
-      if(v==="")return {leer:true};if(v==="x")return {v:mr,x:1};if(v==="f")return {v:0,x:0,f:1};
-      if(/^\d+$/.test(v)){const n=+v;return n>mr?{warn:`${n} ist mehr als ${mr}`}:{v:n,x:0}}
+    const shotInfo=i=>{const v=i.value.trim().toLowerCase().replace("−","-");const se=b.serien[UI.dgAktiv]||{};const mr=Number(se.maxRing)||10,mnr=Math.min(0,Number(se.minRing)||0);
+      if(v===""||(v==="-"&&mnr<0))return {leer:true};if(v==="x")return {v:mr,x:1};if(v==="f")return {v:0,x:0,f:1};
+      if(/^-?\d+$/.test(v)){const n=+v;if(n>mr)return {warn:`${n} ist mehr als ${mr}`};if(n<mnr)return {warn:mnr<0?`${n} ist kleiner als ${mnr}`:`Minuspunkte sind nur im Spaß-Programm erlaubt`};return {v:n,x:0}}
       return {warn:`„${i.value}“ ist kein gültiger Wert`}};
     const rowState=rid=>{const ins=shots.filter(i=>i.dataset.rid===rid);let v=0,x=0,f=0,warn=[];
       ins.forEach(i=>{const s=shotInfo(i);i.classList.toggle("bad",!!s.warn);if(s.warn)warn.push({k:+i.dataset.k,msg:s.warn});else if(!s.leer){f++;v+=s.v;x+=s.x}});
@@ -1019,13 +1025,17 @@ function bind(){
       i.addEventListener("input",()=>{const n=dgUpdate();const v=i.value.trim().toLowerCase();
         const s=shotInfo(i);if(s.warn){toast("⚠ "+s.warn+" – höchstens "+(Number(b.serien[UI.dgAktiv].maxRing)||10)+" Ringe pro Schuss!");return}
         if(v==="f"&&i.value!=="F")i.value="F";
-        if(v==="x"||v==="f"||/^[02-9]$/.test(v)||v==="10")weiterInZeile(i); // nach „1“ auf die 0 warten
+        if(v==="x"||v==="f"||/^-?[02-9]$/.test(v)||/^-?10$/.test(v))weiterInZeile(i); // nach „1“ bzw. „-1“ auf die 0 warten
         });
       i.addEventListener("keydown",ev=>{if(ev.key==="Enter"){ev.preventDefault();weiter(i)}else if(ev.key==="Backspace"&&i.value===""){const ix=shots.indexOf(i);if(ix>0){ev.preventDefault();shots[ix-1].focus()}}});
     });
     document.querySelectorAll("[data-rowx]").forEach(bt=>{bt.addEventListener("mousedown",e=>e.preventDefault());bt.addEventListener("click",()=>{
       const row=shots.filter(i=>i.dataset.rid===bt.dataset.rowx);let t=row.find(i=>i.id===UI.lastShot)||row.find(i=>i.value==="")||row[row.length-1];
       if(!t)return;t.value=bt.dataset.val||"x";t.dataset.dirty="1";dgUpdate();t.focus();weiterInZeile(t)})});
+    document.querySelectorAll("[data-minus]").forEach(bt=>{bt.addEventListener("mousedown",e=>e.preventDefault());bt.addEventListener("click",()=>{
+      const row=shots.filter(i=>i.dataset.rid===bt.dataset.minus);const t=row.find(i=>i.id===UI.lastShot)||row.find(i=>i.value==="")||row[row.length-1];if(!t)return;
+      const v=t.value.trim();t.value=v.startsWith("-")?v.slice(1):(/^(x|f)$/i.test(v)?"-":"-"+v);t.dataset.dirty="1";dgUpdate();t.focus();
+      if(/^-[2-9]$|^-10$/.test(t.value))weiterInZeile(t)})});
     if(shots.length)dgUpdate();
     on("dgSave","click",()=>{
       if(dgUpdate()){toast("⚠ Werte über 10 bzw. ungültige Werte – bitte korrigieren.");const f=shots.find(i=>i.classList.contains("bad"));f&&f.focus();return}
@@ -1119,7 +1129,8 @@ function parseStaende(t){const out=[];String(t||"").split(/[\s,;]+/).forEach(p=>
   if(m){let a=+m[1],z=+m[2];if(z<a)[a,z]=[z,a];for(let i=a;i<=z&&out.length<60;i++)out.push(String(i))}else if(/^\d+$/.test(p))out.push(String(+p))});return [...new Set(out)]}
 function dateiname(b){return (b.name||"Bewerb").replace(/[^\wäöüÄÖÜß-]+/g,"_")}
 function bindForm(b){
-  on("fProg","change",e=>{$("#freiBox").style.display=e.target.value==="frei"?"":"none"});
+  on("fProg","change",e=>{const v=e.target.value;$("#freiBox").style.display=v==="frei"||v==="spass"?"":"none";$("#minBox").style.display=v==="spass"?"":"none";
+    $("#freiTitel").textContent=v==="spass"?"Serien (Spaß-Programm)":"Serien (freies Programm)"});
   on("fAbbr","click",()=>{UI.bewerbId=null;render()});
   on("fDel","click",()=>{const n=Object.values(S.ergebnisse).filter(r=>r.bewerbId===b.id);
     bestaetigen(`Bewerb „${esc(b.name)}“ mit ${n.length} Ergebnis(sen) endgültig löschen? (Personen bleiben erhalten.)`,()=>{n.forEach(r=>del("ergebnisse",r.id));UI.bewerbId=null;del("bewerbe",b.id)})});
@@ -1127,8 +1138,9 @@ function bindForm(b){
     const name=$("#fName").value.trim();if(!name){toast("Bitte einen Namen eingeben.");$("#fName").focus();return}
     const prog=$("#fProg").value;
     let serien;
-    if(prog==="frei"){const n=Math.min(40,Math.max(1,Number($("#fAnz").value)||1)),sch=Math.max(1,Number($("#fSchuss").value)||5),mr=Math.max(1,Number($("#fMaxRing").value)||10),lb=$("#fLabel").value.trim()||"Serie";
-      serien=Array.from({length:n},(_,i)=>({label:lb+" "+(i+1),schuss:sch,maxRing:mr}))}
+    if(prog==="frei"||prog==="spass"){const n=Math.min(40,Math.max(1,Number($("#fAnz").value)||1)),sch=Math.max(1,Number($("#fSchuss").value)||5),mr=Math.max(1,Number($("#fMaxRing").value)||10),lb=$("#fLabel").value.trim()||"Serie";
+      const minR=prog==="spass"?Math.min(-1,Math.round(Number($("#fMinRing").value)||-10)):0;
+      serien=Array.from({length:n},(_,i)=>prog==="spass"?{label:lb+" "+(i+1),schuss:sch,maxRing:mr,minRing:minR}:{label:lb+" "+(i+1),schuss:sch,maxRing:mr})}
     else serien=PROGRAMME[prog].serien;
     const alt=b&&b.serien?JSON.stringify(b.serien):null;
     const hatErg=b&&Object.values(S.ergebnisse).some(r=>r.bewerbId===b.id);
@@ -1145,7 +1157,7 @@ function bindForm(b){
 
 
 /* ================= Offline-App (PWA) ================= */
-const APP_VERSION="32d897de";
+const APP_VERSION="cd2d12b3";
 if("serviceWorker" in navigator&&location.protocol.startsWith("http")){
   window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").then(r=>{
     r.addEventListener("updatefound",()=>{const n=r.installing;n&&n.addEventListener("statechange",()=>{if(n.state==="installed"&&navigator.serviceWorker.controller)toast("Neue App-Version geladen – beim nächsten Öffnen aktiv.")})})
