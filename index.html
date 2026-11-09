@@ -220,9 +220,32 @@ function gleicherName(p,ohneId){return Object.values(S.schuetzen).find(x=>x.id!=
 const personKey=p=>[(p.nachname||"").trim().toLowerCase(),(p.vorname||"").trim().toLowerCase(),String(p.geburtsjahr||"").trim()].join("|");
 function geraetName(){try{return localStorage.getItem("ksv_geraet")||""}catch(e){return ""}}
 function abgleichDaten(){return {app:"ksv-bewerbe",version:2,typ:"abgleich",geraet:geraetName(),exportiert:new Date().toISOString(),...S}}
+function pruefeDatei(data){
+  const hatDaten=data&&["bewerbe","schuetzen","ergebnisse"].some(k=>data[k]&&typeof data[k]==="object");
+  if(!data||(data.app&&data.app!=="ksv-bewerbe")||!hatDaten)throw new Error("keine KSV-Bewerbe-Datei");
+}
+function wiederherstellen(data){
+  pruefeDatei(data);
+  const st={schuetzen:0,bewerbe:0,ergebnisse:0,zurueck:0};
+  const grab=(coll,id)=>{const k=coll+"~"+id;if(S.geloescht[k]){delRaw("geloescht",k);st.zurueck++}};
+  batch=true;
+  try{
+    const map={};
+    Object.values(data.schuetzen||{}).forEach(p=>{if(!p||!p.id)return;grab("schuetzen",p.id);
+      if(!S.schuetzen[p.id]){const dup=gleicherName(p)||Object.values(S.schuetzen).find(x=>(x.alias||[]).includes(p.id));
+        if(dup){map[p.id]=dup.id;put("schuetzen",{...p,id:dup.id,alias:[...new Set([...(dup.alias||[]),p.id])]});st.schuetzen++;return}}
+      put("schuetzen",{...p});st.schuetzen++});
+    const mid=id=>map[id]||id;
+    Object.values(data.bewerbe||{}).forEach(b=>{if(!b||!b.id)return;grab("bewerbe",b.id);
+      const m={};(S.bewerbe[b.id]?.teilnehmer||[]).forEach(x=>m[x.sid]=x);(b.teilnehmer||[]).forEach(x=>m[mid(x.sid)]={...x,sid:mid(x.sid)});
+      put("bewerbe",{...b,teilnehmer:Object.values(m)});st.bewerbe++});
+    Object.values(data.ergebnisse||{}).forEach(r=>{if(!r||!r.id)return;grab("ergebnisse",r.id);put("ergebnisse",{...r,sid:r.sid?mid(r.sid):""});st.ergebnisse++});
+  }finally{batch=false;if(backend!=="db")saveLocal();render(true)}
+  return st;
+}
 function abgleich(data){
-  if(!data||data.app!=="ksv-bewerbe")throw new Error("keine KSV-Bewerbe-Datei");
-  const st={neu:0,akt:0,del:0,pers:0};
+  pruefeDatei(data);
+  const st={neu:0,akt:0,del:0,pers:0,alt:0};
   const tot=(coll,id)=>{const t=S.geloescht[coll+"~"+id];return t?t.zeit:""};
   batch=true;
   try{
@@ -235,9 +258,9 @@ function abgleich(data){
     // 2. Personen (gleiche Person mit anderer ID wird zusammengeführt)
     const map={};
     Object.values(data.schuetzen||{}).forEach(p=>{
-      if(!p||!p.id)return;const t=tot("schuetzen",p.id);if(t&&t>=zeitVon(p))return;
+      if(!p||!p.id)return;const t=tot("schuetzen",p.id);if(t&&t>=zeitVon(p)){st.alt++;return}
       const loc=S.schuetzen[p.id];
-      if(loc){if(zeitVon(p)>zeitVon(loc)){put("schuetzen",{...p},true);st.akt++}return}
+      if(loc){if(zeitVon(p)>zeitVon(loc)){put("schuetzen",{...p},true);st.akt++}else if(zeitVon(p)<zeitVon(loc))st.alt++;return}
       const bekannt=Object.values(S.schuetzen).find(x=>(x.alias||[]).includes(p.id)); // schon früher zusammengeführt
       if(bekannt){map[p.id]=bekannt.id;if(zeitVon(p)>zeitVon(bekannt)){put("schuetzen",{...p,id:bekannt.id,alias:bekannt.alias},true);st.akt++}return}
       const dup=Object.values(S.schuetzen).find(x=>personKey(x)===personKey(p));
@@ -249,7 +272,7 @@ function abgleich(data){
     const tnVereint=(alt,neu)=>{const m={};(alt||[]).forEach(t=>m[t.sid]=t);(neu||[]).forEach(t=>m[t.sid]=t);return Object.values(m)};
     // 3. Bewerbe (Felder: neuerer Stand gewinnt; Teilnehmerlisten werden vereint)
     Object.values(data.bewerbe||{}).forEach(b=>{
-      if(!b||!b.id)return;const t=tot("bewerbe",b.id);if(t&&t>=zeitVon(b))return;
+      if(!b||!b.id)return;const t=tot("bewerbe",b.id);if(t&&t>=zeitVon(b)){st.alt++;return}
       const tn=(b.teilnehmer||[]).map(x=>({...x,sid:mid(x.sid)}));
       const loc=S.bewerbe[b.id];
       if(!loc){put("bewerbe",{...b,teilnehmer:tnVereint([],tn)},true);st.neu++;return}
@@ -261,9 +284,9 @@ function abgleich(data){
     });
     // 4. Ergebnisse (jede Zeile eines Durchgangs einzeln: neuerer Stand gewinnt)
     Object.values(data.ergebnisse||{}).forEach(r=>{
-      if(!r||!r.id)return;const t=tot("ergebnisse",r.id);if(t&&t>=zeitVon(r))return;
+      if(!r||!r.id)return;const t=tot("ergebnisse",r.id);if(t&&t>=zeitVon(r)){st.alt++;return}
       const rr={...r,sid:r.sid?mid(r.sid):""};const loc=S.ergebnisse[r.id];
-      if(!loc){put("ergebnisse",rr,true);st.neu++}else if(zeitVon(r)>zeitVon(loc)){put("ergebnisse",rr,true);st.akt++}
+      if(!loc){put("ergebnisse",rr,true);st.neu++}else if(zeitVon(r)>zeitVon(loc)){put("ergebnisse",rr,true);st.akt++}else if(zeitVon(r)<zeitVon(loc))st.alt++
     });
   }finally{batch=false;if(backend!=="db")saveLocal();render(true)}
   try{localStorage.setItem("ksv_letzter_abgleich",JSON.stringify({zeit:new Date().toISOString(),von:data.geraet||"",datei:data.exportiert||""}))}catch(e){}
@@ -451,14 +474,29 @@ function uhrMiniUpdate(){
   el.innerHTML=`${ICO.uhr}<span class="mlab">${cd?"Countdown":uhrProg()?uhrProg().name:"Stoppuhr"}</span><span class="mzeit">${UHR.fertig?"Zeit abgelaufen!":uhrText(cd?Math.ceil(ms/100)*100:ms,true)}</span>`;
 }
 function uhrStoppTimer(){if(UHR.timer){clearInterval(UHR.timer);UHR.timer=null}}
-let uhrAudio=null;
-function uhrSignal(art){try{uhrAudio=uhrAudio||new (window.AudioContext||window.webkitAudioContext)();const c=uhrAudio;c.resume&&c.resume();
-  // Start und IPSC: derselbe durchdringende Piep · Ende: Alarm aus 6 Tönen (abwechselnd hoch/tief)
-  // IPSC/Start: länger, lauter und mit zweitem Oberton für einen schärferen Klang
-  const toene=(art==="ende")?[0,0.4,0.8,1.2,1.6,2.0].map((t0,i)=>[t0,i%2?1900:2600,0.32,0.4]):[[0,2400,0.75,0.6],[0,3150,0.75,0.25]];
-  toene.forEach(([t0,f,len,vol])=>{const o=c.createOscillator(),g=c.createGain();o.type="square";o.frequency.value=f;o.connect(g);g.connect(c.destination);
-    g.gain.setValueAtTime(0.0001,c.currentTime+t0);g.gain.exponentialRampToValueAtTime(vol,c.currentTime+t0+0.008);g.gain.setValueAtTime(vol,c.currentTime+t0+len-0.04);g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+t0+len);o.start(c.currentTime+t0);o.stop(c.currentTime+t0+len+0.02)})}catch(e){}
-  if(art==="ende")try{navigator.vibrate&&navigator.vibrate([300,150,300,150,300])}catch(e){}}
+/* Töne als echte Audiodatei (WAV) – spielt am iPad auch im Stumm-Modus und nach Verzögerung (IPSC) */
+function uhrWav(toene){
+  const rate=22050,ende=Math.max(...toene.map(([t0,,len])=>t0+len))+0.05,n=Math.ceil(ende*rate),buf=new Float32Array(n);
+  toene.forEach(([t0,f,len,vol])=>{const a=Math.floor(t0*rate),b=Math.min(n,Math.floor((t0+len)*rate));for(let i=a;i<b;i++){const tt=(i-a)/rate,sq=Math.sin(2*Math.PI*f*tt)>=0?1:-1,env=Math.min(1,tt/0.005,(len-tt)/0.03);buf[i]+=sq*vol*Math.max(0,env)}});
+  const dv=new DataView(new ArrayBuffer(44+n*2)),ws=(o,s)=>{for(let i=0;i<s.length;i++)dv.setUint8(o+i,s.charCodeAt(i))};
+  ws(0,"RIFF");dv.setUint32(4,36+n*2,true);ws(8,"WAVE");ws(12,"fmt ");dv.setUint32(16,16,true);dv.setUint16(20,1,true);dv.setUint16(22,1,true);dv.setUint32(24,rate,true);dv.setUint32(28,rate*2,true);dv.setUint16(32,2,true);dv.setUint16(34,16,true);ws(36,"data");dv.setUint32(40,n*2,true);
+  for(let i=0;i<n;i++)dv.setInt16(44+i*2,Math.max(-1,Math.min(1,buf[i]*0.9))*32767,true);
+  return URL.createObjectURL(new Blob([dv.buffer],{type:"audio/wav"}));
+}
+const UHR_SND={};
+function uhrSnd(art){const k=art==="ende"?"ende":"start";if(!UHR_SND[k]){
+  const toene=k==="ende"?[0,0.4,0.8,1.2,1.6,2.0].map((t0,i)=>[t0,i%2?1900:2600,0.32,0.55]):[[0,2400,0.75,0.6],[0,3150,0.75,0.3]];
+  const el=new Audio(uhrWav(toene));el.preload="auto";el.addEventListener("ended",()=>{el._spielt=false});UHR_SND[k]=el}return UHR_SND[k]}
+function uhrFreischalten(){ // muss bei einem Tippen passieren (iPad/Safari)
+  ["start","ende"].forEach(k=>{const el=uhrSnd(k);if(el._frei)return;el.muted=true;const pr=el.play();
+    const fertig=()=>{if(!el._spielt){el.pause();try{el.currentTime=0}catch(e){}}el.muted=false;el._frei=true};
+    if(pr&&pr.then)pr.then(fertig).catch(()=>{el.muted=false});else fertig()});
+}
+function uhrSignal(art){
+  const el=uhrSnd(art);el._spielt=true;el.muted=false;try{el.currentTime=0}catch(e){}
+  const pr=el.play();if(pr&&pr.catch)pr.catch(()=>{el._spielt=false});
+  if(art==="ende")try{navigator.vibrate&&navigator.vibrate([300,150,300,150,300])}catch(e){}
+}
 function vStoppuhr(){
   UHR.modus="stopp";
   const ms=uhrAnzeigeMs(),p=uhrProg(),g=uhrGrenzen(),st=uhrLadeStufe();
@@ -481,7 +519,7 @@ function bindStoppuhr(){
   const laufName=()=>uhrProg()?uhrProg().name:"Stoppuhr";
   const warnung=(ok,was,label)=>{if(!(UHR.laeuft||UHR.warte)){ok();return}
     bestaetigen(`<b style="color:var(--warn);font-size:17px">⚠ Achtung: „${esc(laufName())}“ läuft gerade!</b><br><br>${was}<br><br><span class="small muted">Solange du nicht bestätigst, läuft die Zeit ungestört weiter.</span>`,ok,label);};
-  on("uhrStart","click",()=>{try{uhrAudio=uhrAudio||new (window.AudioContext||window.webkitAudioContext)();uhrAudio.resume&&uhrAudio.resume()}catch(e){}
+  on("uhrStart","click",()=>{uhrFreischalten();
     if(UHR.warte){warnung(()=>{uhrStartAktion();render(true)},"Willst du den Start wirklich abbrechen?","Ja, abbrechen");return} // Pause: ohne Nachfrage
     uhrStartAktion();render(true)});
   function uhrStartAktion(){
@@ -493,10 +531,10 @@ function bindStoppuhr(){
       UHR.warte=setTimeout(()=>{UHR.warte=null;uhrSignal("ipsc");los();if(document.getElementById("uhrAnz"))render(true);else uhrMiniUpdate()},ms)}
     else{if(uhrLadeStufe()==="lende"){UHR.basis=0}if(UHR.sStart)uhrSignal("start");if(UHR.fertig){UHR.basis=0;UHR.fertig=false}los()}
   }
-  on("uhrIpsc","change",e=>{UHR.ipsc=e.target.checked;uhrSoundSpeichern();render(true)});
-  on("uhrSStart","change",e=>{UHR.sStart=e.target.checked;uhrSoundSpeichern()});
-  on("uhrSEnde","change",e=>{UHR.sEnde=e.target.checked;uhrSoundSpeichern()});
-  onAll("[data-uhrprog]","click",e=>{const k=e.dataset.uhrprog,neu=UHR.lade===k?false:k;
+  on("uhrIpsc","change",e=>{uhrFreischalten();UHR.ipsc=e.target.checked;uhrSoundSpeichern();render(true)});
+  on("uhrSStart","change",e=>{uhrFreischalten();UHR.sStart=e.target.checked;uhrSoundSpeichern()});
+  on("uhrSEnde","change",e=>{uhrFreischalten();UHR.sEnde=e.target.checked;uhrSoundSpeichern()});
+  onAll("[data-uhrprog]","click",e=>{uhrFreischalten();const k=e.dataset.uhrprog,neu=UHR.lade===k?false:k;
     const waehle=()=>{if(UHR.warte){clearTimeout(UHR.warte);UHR.warte=null}uhrStoppTimer();UHR.modus="stopp";UHR.lade=neu;UHR.laeuft=false;UHR.fertig=false;UHR.basis=0;render(true)};
     warnung(waehle,neu?`Willst du sie beenden und „${esc(UHR_PROG[neu].name)}“ auswählen? (Die Zeit wird auf 0 gesetzt.)`:`Willst du sie beenden und „${esc(UHR_PROG[k].name)}“ abwählen? (Die Zeit wird auf 0 gesetzt.)`,"Ja, beenden")});
   on("uhrReset","click",()=>warnung(()=>{if(UHR.warte){clearTimeout(UHR.warte);UHR.warte=null}UHR.laeuft=false;UHR.basis=0;UHR.fertig=false;uhrStoppTimer();render(true)},"Willst du die Zeit wirklich beenden und auf 0 zurücksetzen?","Ja, zurücksetzen"));
@@ -872,7 +910,10 @@ function vDaten(){
   <div class="row"><div style="flex:0 1 260px"><label>Name dieses Geräts (erscheint im Dateinamen)</label><input id="geraetName" value="${esc(geraetName())}" placeholder="z. B. iPad Roman"></div></div>
   ${(()=>{try{const l=JSON.parse(localStorage.getItem("ksv_letzter_abgleich")||"null");return l?`<p class="small">Letzter Abgleich: <b>${new Date(l.zeit).toLocaleString("de-AT")}</b>${l.von?` mit „${esc(l.von)}“`:""}</p>`:""}catch(e){return ""}})()}
   <div class="flex" style="margin-top:8px"><button class="b" id="expJson">⬆ Abgleich-Datei erstellen</button><button class="b g" id="cpJson">In Zwischenablage</button></div>
-  <div style="margin-top:12px"><label>⬇ Abgleich-Datei vom anderen Gerät laden</label><input type="file" id="impFile" accept=".json,application/json" style="max-width:360px"></div>
+  <div style="margin-top:12px"><label>⬇ Abgleich-Datei vom anderen Gerät laden</label><input type="file" id="impFile" style="max-width:360px"></div>
+  <h3>Alte Sicherung wiederherstellen</h3>
+  <p class="small muted">Für ältere Abgleich-Dateien (z. B. eine frühere Sicherung vom PC): Alles aus der Datei wird übernommen – <b>auch Einträge, die hier inzwischen gelöscht oder geändert wurden</b>. Was hier neu dazugekommen ist und nicht in der Datei steht, bleibt erhalten.</p>
+  <div><input type="file" id="restFile" style="max-width:360px"></div>
   <p class="small muted" style="margin-top:8px"><b>So geht’s:</b> Gerät A „Abgleich-Datei erstellen“ → Datei per AirDrop, Mail oder Google Drive an Gerät B → dort laden. Danach umgekehrt (B erstellen → A laden), dann haben beide denselben Stand.
   Tipp: Einen gemeinsamen Bewerb nur auf <b>einem</b> Gerät anlegen und zuerst abgleichen – erst dann auf beiden erfassen.</p>
   <h3>Schützen exportieren</h3>
@@ -1451,9 +1492,16 @@ function bind(){
       modal(`<h3 style="margin-top:0">Abgleich abgeschlossen ✓</h3><p>${j.geraet?`Datei von „${esc(j.geraet)}“${j.exportiert?" vom "+new Date(j.exportiert).toLocaleString("de-AT"):""}`:"Datei geladen"}.</p>
         <table><tbody><tr><td>Neu übernommen</td><td class="n"><b>${s.neu}</b></td></tr><tr><td>Aktualisiert (neuerer Stand)</td><td class="n"><b>${s.akt}</b></td></tr>
         <tr><td>Gelöscht (wie am anderen Gerät)</td><td class="n"><b>${s.del}</b></td></tr><tr><td>Gleiche Personen zusammengeführt</td><td class="n"><b>${s.pers}</b></td></tr></tbody></table>
-        <p class="small muted">Damit das andere Gerät auch deinen Stand hat: hier „Abgleich-Datei erstellen“ und dort laden.</p><div class="right"><button class="b" id="abgOk">OK</button></div>`,()=>{$("#abgOk").onclick=closeModal});
+        ${s.alt?`<div class="notice small">${s.alt} Einträge aus der Datei waren <b>älter</b> als hier (oder wurden hier gelöscht) und wurden deshalb <b>nicht</b> übernommen. Willst du eine alte Sicherung zurückholen, nimm unten „Alte Sicherung wiederherstellen“.</div>`:""}<p class="small muted">Damit das andere Gerät auch deinen Stand hat: hier „Abgleich-Datei erstellen“ und dort laden.</p><div class="right"><button class="b" id="abgOk">OK</button></div>`,()=>{$("#abgOk").onclick=closeModal});
     }catch(x){console.error(x);toast("Abgleich fehlgeschlagen: "+(x.message||"unbekannter Fehler"))}
     e.target.value=""};rd.readAsText(f)});
+  on("restFile","change",e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{
+    e.target.value="";let j;try{j=JSON.parse(rd.result);pruefeDatei(j)}catch(x){toast("Das ist keine KSV-Bewerbe-Datei.");return}
+    const n=k=>Object.keys(j[k]||{}).length;
+    bestaetigen(`<b style="color:var(--warn);font-size:17px">⚠ Alte Sicherung wiederherstellen?</b><br><br>${j.geraet?`Datei von „${esc(j.geraet)}“`:"Datei"}${j.exportiert?" vom "+new Date(j.exportiert).toLocaleString("de-AT"):""}<br><span class="small">${n("bewerbe")} Bewerbe · ${n("schuetzen")} Personen · ${n("ergebnisse")} Ergebnisse</span><br><br>Alles aus der Datei wird übernommen und <b>überschreibt</b> den Stand hier – auch hier gelöschte oder geänderte Einträge kommen zurück. Neue Einträge hier, die nicht in der Datei stehen, bleiben erhalten.<br><br><span class="small muted">Tipp: Vorher hier „Abgleich-Datei erstellen“ als Sicherung des aktuellen Stands.</span>`,()=>{
+      try{const s=wiederherstellen(j);modal(`<h3 style="margin-top:0">Sicherung wiederhergestellt ✓</h3><table><tbody><tr><td>Bewerbe</td><td class="n"><b>${s.bewerbe}</b></td></tr><tr><td>Personen</td><td class="n"><b>${s.schuetzen}</b></td></tr><tr><td>Ergebnisse</td><td class="n"><b>${s.ergebnisse}</b></td></tr><tr><td>Gelöschte Einträge zurückgeholt</td><td class="n"><b>${s.zurueck}</b></td></tr></tbody></table><div class="right"><button class="b" id="abgOk">OK</button></div>`,()=>{$("#abgOk").onclick=closeModal})}
+      catch(x){console.error(x);toast("Wiederherstellen fehlgeschlagen: "+(x.message||"Fehler"))}},"Ja, wiederherstellen"," ")};
+    rd.readAsText(f)});
   on("xlsxSchuetzen","click",()=>{try{const d=new Date(),p=n=>String(n).padStart(2,"0");anbieten(`KSV_Schuetzen_${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}.xlsx`,excelSchuetzen(),"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")}catch(e){console.error(e);toast("Excel-Export fehlgeschlagen.")}});
   on("csvPImp","click",()=>{const t=$("#csvP").value.trim();if(!t)return;let n=0;const doppelt=[];
     const ob=batch;batch=true;
@@ -1504,7 +1552,7 @@ function bindForm(b){
 
 
 /* ================= Offline-App (PWA) ================= */
-const APP_VERSION="f2b4f1b5";
+const APP_VERSION="cd05329a";
 if("serviceWorker" in navigator&&location.protocol.startsWith("http")){
   window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").then(r=>{
     r.addEventListener("updatefound",()=>{const n=r.installing;n&&n.addEventListener("statechange",()=>{if(n.state==="installed"&&navigator.serviceWorker.controller)toast("Neue App-Version geladen – beim nächsten Öffnen aktiv.")})})
