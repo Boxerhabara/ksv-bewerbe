@@ -915,9 +915,9 @@ function schuetzeDialog(s,onSaved){
       const hat=Object.values(S.ergebnisse).some(r=>r.sid===s.id);
       if(hat){toast("Person hat Ergebnisse – zuerst Ergebnisse löschen.");return}
       const bw=Object.values(S.bewerbe).filter(b=>teilnahme(b,s.id));
-      bestaetigen(`<b style="color:var(--warn);font-size:17px">⚠ Schütze wirklich löschen?</b><br><br><b>${esc(sName(s))}</b>${s.geburtsjahr?` (${esc(s.geburtsjahr)})`:""}<br><br>${bw.length?`Die Person wird auch aus ${bw.length===1?"dem Bewerb":bw.length+" Bewerben"} entfernt: ${bw.map(b=>esc(b.name)).join(", ")}.<br><br>`:""}Das kann nicht rückgängig gemacht werden.`,()=>{
+      bestaetigen(`<b style="color:var(--warn);font-size:17px">⚠ Schütze wirklich löschen?</b><br><br><b>${esc(sName(s))}</b>${s.geburtsjahr?` (${esc(s.geburtsjahr)})`:""}<br><br>${bw.length?`Die Person wird auch aus ${bw.length===1?"dem Bewerb":bw.length+" Bewerben"} entfernt: ${bw.map(b=>esc(b.name)).join(", ")}.<br><br>`:""}Das kann nicht rückgängig gemacht werden.`,()=>loeschWort(esc(sName(s)),()=>{
         const ob=batch;batch=true;bw.forEach(b=>put("bewerbe",{...b,teilnehmer:b.teilnehmer.filter(t=>t.sid!==s.id)}));
-        del("schuetzen",s.id);batch=ob;if(backend!=="db")saveLocal();render(true);toast(`${sName(s)} gelöscht.`)},"Ja, Schütze löschen")};
+        del("schuetzen",s.id);batch=ob;if(backend!=="db")saveLocal();render(true);toast(`${sName(s)} gelöscht.`)}),"Weiter …")};
     $("#dOk").onclick=()=>{
       const o={...s,id:s.id||uid(),vorname:$("#dVor").value.trim(),nachname:$("#dNach").value.trim(),geburtsjahr:$("#dJg").value.trim(),geschlecht:$("#dG").value,verein:$("#dVer").value.trim(),notiz:$("#dNot").value.trim()};
       if(!o.nachname&&!o.vorname){toast("Bitte einen Namen eingeben.");return}
@@ -928,6 +928,15 @@ function schuetzeDialog(s,onSaved){
       put("schuetzen",o);closeModal();onSaved&&onSaved(o);};
     $("#modalroot").querySelectorAll("input").forEach(i=>i.addEventListener("keydown",e=>{if(e.key==="Enter")$("#dOk").click()}));
   });
+}
+function loeschWort(was,ok){
+  modal(`<b style="color:var(--warn);font-size:17px">⚠ Löschen bestätigen</b><p>Zum endgültigen Löschen von <b>${was}</b> tippe bitte das Wort <b>löschen</b> in das Feld:</p>
+  <input id="delWort" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="löschen" style="max-width:260px">
+  <div class="right"><button class="b g" id="cNo">Abbrechen</button><button class="b d" id="cYes" disabled style="opacity:.45">Endgültig löschen</button></div>`,()=>{
+    const inp=$("#delWort"),btn=$("#cYes"),pr=()=>inp.value.trim().toLowerCase()==="löschen";
+    inp.focus();inp.addEventListener("input",()=>{btn.disabled=!pr();btn.style.opacity=pr()?"1":".45"});
+    inp.addEventListener("keydown",e=>{if(e.key==="Enter"&&pr())btn.click()});
+    $("#cNo").onclick=closeModal;btn.onclick=()=>{if(!pr())return;closeModal();ok()}});
 }
 function bestaetigen(text,ok,label,cls){modal(`<p>${text}</p><div class="right"><button class="b g" id="cNo">Abbrechen</button><button class="b ${cls||"d"}" id="cYes">${label||"Ja, löschen"}</button></div>`,()=>{$("#cNo").onclick=closeModal;$("#cYes").onclick=()=>{closeModal();ok()}})}
 function melde(b,sid){
@@ -1495,7 +1504,7 @@ function bindForm(b){
 
 
 /* ================= Offline-App (PWA) ================= */
-const APP_VERSION="0f2a886c";
+const APP_VERSION="f2b4f1b5";
 if("serviceWorker" in navigator&&location.protocol.startsWith("http")){
   window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").then(r=>{
     r.addEventListener("updatefound",()=>{const n=r.installing;n&&n.addEventListener("statechange",()=>{if(n.state==="installed"&&navigator.serviceWorker.controller)toast("Neue App-Version geladen – beim nächsten Öffnen aktiv.")})})
