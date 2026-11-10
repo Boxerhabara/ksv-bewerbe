@@ -31,7 +31,7 @@ header .brand{display:flex;align-items:center;gap:10px;cursor:pointer}
 @media (max-width:560px){.logo{height:38px;width:38px}header h1{font-size:16px}}
 header nav{display:flex;gap:4px;flex-wrap:nowrap;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
 header .navbtn{margin-left:auto}
-header nav button,header .navbtn{background:transparent;color:#fff;border:1px solid transparent;padding:6px 12px;border-radius:8px;cursor:pointer;font:inherit}
+header nav button,header .navbtn{background:transparent;color:#fff;border:1px solid transparent;padding:10px 14px;min-height:44px;border-radius:8px;cursor:pointer;font:inherit}
 header nav button.on,header .navbtn.on{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.3)}
 @media (max-width:1000px){header h1{font-size:16px}header .brandtxt{flex-direction:column;align-items:flex-start;gap:3px}header nav>button,header .navbtn{padding:6px 10px}}
 .badge{font-size:12px;padding:2px 8px;border-radius:99px;background:rgba(255,255,255,.18)}
@@ -41,7 +41,13 @@ h2{font-size:20px;margin:0 0 10px} h3{font-size:16px;margin:16px 0 8px}
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
 .row>*{flex:1 1 160px}
 label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:3px}
-button,input,select,textarea,a{touch-action:manipulation}
+button,input,select,textarea,a,label,summary,.chip,.click,[data-editsch]{touch-action:manipulation}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+*{-webkit-tap-highlight-color:rgba(0,0,0,0)}
+button,.b,.chip,.pill,.ladebtn,.tabs button,header nav button,summary{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+button:active,.b:active,.chip:active,.ladebtn:active,.pill[data-addtn]:active{transform:scale(.97);filter:brightness(.95)}
+summary{padding:12px 0;min-height:44px;box-sizing:border-box}
+input[type=checkbox]{min-width:22px;min-height:22px;accent-color:var(--acc)}
 @media (pointer:coarse){input,select,textarea{font-size:16px!important}button.b{min-height:40px}}
 .ser-small{white-space:normal}
 .katbtn{min-width:150px;height:50px;font:inherit;font-size:16px;font-weight:700;border-radius:10px;border:2px solid var(--acc);background:var(--card);color:var(--acc);cursor:pointer;padding:0 16px;box-sizing:border-box}
@@ -54,8 +60,8 @@ details.standmehr>summary{list-style:none}
 details.standmehr>summary::-webkit-details-marker{display:none}
 .standpanel{position:absolute;z-index:10;top:56px;right:0;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;box-shadow:0 6px 20px rgba(0,0,0,.18);width:260px}
 .dgtab th,.dgtab td{padding:7px 4px}
-.kalbox{display:inline-flex;align-items:center;gap:4px;font-size:15px;font-weight:700;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:5px 5px;margin:0;cursor:pointer;user-select:none}
-.kalbox input{width:19px;height:19px;margin:0;accent-color:var(--acc)}
+.kalbox{display:inline-flex;align-items:center;gap:4px;font-size:15px;font-weight:700;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:9px 4px;margin:0;cursor:pointer;user-select:none}
+.kalbox input{width:22px;height:22px;margin:0;accent-color:var(--acc)}
 .kalbox.on{border-color:var(--acc);background:var(--accsoft)}
 @media (max-width:820px){.dg-bisher{display:none}}
 input,select,textarea{width:100%;font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
@@ -65,7 +71,7 @@ button.b:hover{background:var(--acc2)}
 button.g{background:transparent;color:var(--acc);}
 button.g:hover{background:var(--accsoft)}
 button.d{border-color:var(--warn);background:transparent;color:var(--warn)}
-button.sm{padding:4px 10px;font-size:13px}
+button.sm{padding:8px 12px;font-size:14px;min-height:40px;min-width:40px}
 button:disabled{opacity:.5;cursor:default}
 table{width:100%;border-collapse:collapse;font-size:14px}
 th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
@@ -82,7 +88,7 @@ tr.click{cursor:pointer} tr.click:hover{background:var(--accsoft)}
 .tabico{width:1.15em;height:1.15em;vertical-align:-.2em;margin-right:5px}
 .tabs button.on{color:var(--acc);border-bottom-color:var(--acc);font-weight:600}
 .chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
-.chip{font:inherit;font-size:13px;padding:5px 11px;border-radius:99px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+.chip{font:inherit;font-size:14px;padding:9px 14px;min-height:40px;border-radius:99px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
 .chip.on{background:var(--acc);border-color:var(--acc);color:#fff}
 .muted{color:var(--muted)} .small{font-size:13px}
 .pill{display:inline-block;font-size:12px;padding:1px 8px;border-radius:99px;background:var(--accsoft);color:var(--acc2);white-space:nowrap}
@@ -115,7 +121,7 @@ tr.click{cursor:pointer} tr.click:hover{background:var(--accsoft)}
 .tw{overflow-x:auto}
 .ser-small{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
 .uhrcard{text-align:center;padding:24px 12px;display:flex;flex-direction:column;align-items:center}.uhrcard>*{width:100%}.uhranz{font-size:min(165px,calc((100vw - 90px)/6.6));font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:2px;line-height:1.2;margin:34px 0 10px;color:var(--ink)}.uhrz{font-size:.45em;color:var(--muted)}.uhrknoepfe{display:flex;gap:14px;justify-content:center;align-items:center;margin:14px auto 0;width:100%}.uhrknoepfe .b.uhrbtn{font-size:22px;padding:16px 26px;min-width:180px;font-weight:600}.uhrende .uhranz{color:#c62828}.uhrfertig{font-size:24px;font-weight:700;color:#c62828;margin-bottom:6px}
-body.mituhr main{padding-bottom:90px}.uhroptitel{margin-top:140px;padding-top:14px;border-top:1px solid var(--line);font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}.uhrsound{display:flex;gap:28px;justify-content:center;margin-top:10px;flex-wrap:wrap}.uhrsound label{display:flex;align-items:center;gap:10px;font-size:17px;cursor:pointer;margin:0}.uhrsound input{width:24px;height:24px;margin:0;accent-color:var(--acc)}
+body.mituhr main{padding-bottom:90px}.uhroptitel{margin-top:140px;padding-top:14px;border-top:1px solid var(--line);font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}.uhrsound{display:flex;gap:28px;justify-content:center;margin-top:10px;flex-wrap:wrap}.uhrsound label{display:flex;align-items:center;gap:10px;font-size:17px;cursor:pointer;margin:0;padding:10px 6px}.uhrsound input{width:24px;height:24px;margin:0;accent-color:var(--acc)}
 #uhrMini{position:fixed;right:16px;bottom:16px;z-index:15;display:flex;align-items:center;gap:10px;background:var(--acc2);color:#fff;border:none;border-radius:14px;padding:10px 18px;box-shadow:0 4px 16px rgba(0,0,0,.25);cursor:pointer;font:inherit}#uhrMini[hidden]{display:none}#uhrMini .tabico{width:26px;height:26px;margin:0}#uhrMini .mlab{font-size:13px;opacity:.85}#uhrMini .mzeit{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums}#uhrMini .mzeit .uhrz{color:rgba(255,255,255,.75)}#uhrMini.pause{background:#5d6f76}#uhrMini.ende{background:#c62828;animation:uhrblink 1s infinite}@keyframes uhrblink{50%{opacity:.6}}@media print{#uhrMini{display:none!important}}
 .uhranz.lgelb{color:#e0a800;animation:uhrblink .8s infinite}.uhranz.lrot{color:#c62828;animation:uhrblink .5s infinite}.uhranz.lende{color:#c62828}#uhrMini.gelb{background:#c99700;animation:uhrblink .8s infinite}.uhrcard{position:relative}.uhrhaupt{text-align:center}.uhrtitel{font-size:15px;font-weight:600;color:var(--muted);margin-top:4px}.uhrprog{position:absolute;top:20px;right:14px;display:flex;flex-direction:column;gap:10px;width:auto!important}.ladebtn{display:flex;align-items:center;gap:8px;font:inherit;font-size:17px;font-weight:600;padding:12px 18px;border-radius:999px;border:2px solid #00acc1;background:none;color:#00acc1;cursor:pointer;white-space:nowrap}.ladebtn .tabico{width:1.3em;height:1.3em;margin:0}.ladebtn.on{background:#00acc1;color:#fff}@media (max-width:1000px){.uhrprog{gap:8px;top:16px;right:10px}.ladebtn{font-size:15px;padding:8px 14px}}@media (max-width:640px){.uhrprog{position:static;flex-direction:row;flex-wrap:wrap;justify-content:center;margin-top:14px}}
 </style>
@@ -458,6 +464,17 @@ function render(keepInputs){
 }
 
 
+
+/* ================= Bildschirm wach halten (iPad sperrt sonst nach kurzer Zeit) ================= */
+let wachLock=null;
+function wachAn(){try{return localStorage.getItem("ksv_wach")!=="0"}catch(e){return true}}
+async function wachHalten(){
+  if(!wachAn()||wachLock||!("wakeLock" in navigator)||document.visibilityState!=="visible")return;
+  try{wachLock=await navigator.wakeLock.request("screen");wachLock.addEventListener("release",()=>{wachLock=null})}catch(e){wachLock=null}
+}
+function wachLos(){try{wachLock&&wachLock.release()}catch(e){}wachLock=null}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")wachHalten()});
+document.addEventListener("pointerdown",()=>{if(!wachLock)wachHalten()},{passive:true});
 /* ================= Stoppuhr ================= */
 const UHR={modus:"stopp",laeuft:false,start:0,basis:0,dauer:150000,fertig:false,timer:null};
 (()=>{try{const s=JSON.parse(localStorage.getItem("ksv_uhr_sound")||"null");UHR.sStart=s?!!s.start:false;UHR.sEnde=s?!!s.ende:true;UHR.ipsc=s?!!s.ipsc:false}catch(e){UHR.sStart=false;UHR.sEnde=true;UHR.ipsc=false}})();
@@ -698,7 +715,7 @@ function vDurchgang(b){
       ${Number(b.serien[si].minRing)<0?`<button class="b" data-minus="${r.id}" tabindex="-1" title="Minus: Vorzeichen im aktuellen bzw. nächsten freien Feld umschalten" style="padding:8px 14px;margin-left:14px;font-weight:700;background:#7a3e9d;border-color:#7a3e9d">−</button>`:""}</div>
       ${r.serien[si]!=null&&r.serien[si]!==""&&!(r.schuss||[])[si]?`<div class="small muted">gespeichert: ${serAnzeige(r.serien[si],(r.xs||[])[si])} (ohne Einzelschüsse)</div>`:""}</td>
     <td class="n"><b id="dgsum_${r.id}">${num(summe(r))}</b><div class="small" style="color:var(--acc)" id="dgx_${r.id}">${xSumme(r)?xSumme(r)+"x":""}</div></td>
-    <td class="n">${r.serien.every(v=>v==null||v==="")?`<button class="b d sm" data-dgdel="${r.id}" title="Stand aus dem Durchgang entfernen">×</button>`:""}</td></tr>`}).join("")}
+    <td class="n">${r.serien.every(v=>v==null||v==="")?`<button class="b d sm" data-dgdel="${r.id}" title="Stand aus dem Durchgang entfernen" style="min-width:32px;padding:8px 8px">×</button>`:""}</td></tr>`}).join("")}
   </tbody></table></div>
   <div id="dgWarn"></div><div id="dgWarnName"></div>
   <div class="flex" style="margin-top:12px"><div class="flex sp"><input id="dgAddStand" type="number" min="1" placeholder="Stand Nr." style="width:110px"><button class="b g sm" id="dgAdd">+ Stand hinzufügen</button></div>
@@ -807,7 +824,7 @@ function vTeilnehmer(b){
   ${tn.map(({t,s})=>`<tr><td><b>${esc(sName(s))}</b></td><td>${esc(s.verein||"")}</td><td>${esc(s.geburtsjahr||"")}</td>
   <td><span class="pill">${KLASSEN[klasseVon(b,s.id)]}</span></td>
   <td><select data-klasse="${s.id}" style="min-width:140px"><option value="">automatisch</option>${KLASSEN_ORD.filter(k=>k!=="G").map(k=>`<option value="${k}" ${t.klasse===k?"selected":""}>${KLASSEN[k]}</option>`).join("")}</select></td>
-  <td><input type="checkbox" data-gast="${s.id}" ${t.gast?"checked":""} style="width:auto"></td>
+  <td><label style="display:inline-flex;padding:8px;margin:-8px;cursor:pointer"><input type="checkbox" data-gast="${s.id}" ${t.gast?"checked":""} style="width:24px;height:24px;margin:0;accent-color:var(--acc)"></label></td>
   <td class="small">${fmtD(t.gemeldet)}</td>
   <td><button class="b d sm" data-deltn="${s.id}">Entfernen</button></td></tr>`).join("")}</tbody></table></div>`:`<p class="muted">Noch niemand gemeldet.</p>`}
   <p class="small muted">„Startet in Klasse“: z. B. Senioren 2 auf eigenen Wunsch in Senioren 1 (FFWGK 2.1.7). Gäste werden in einer eigenen Klasse geführt (2.1.6).</p></div>`;
@@ -914,6 +931,7 @@ function vDaten(){
   return `<h2>Daten &amp; Sicherung</h2>
   <div class="card"><p>Speicherort: <b>${backend==="db"?"Cloud (geteilt zwischen allen Geräten, die diese Seite öffnen)":"Nur dieser Browser (lokal)"}</b></p>
   <p class="small muted">${n[0]} Bewerbe · ${n[1]} Personen · ${n[2]} Ergebnisse</p>
+  <label style="display:flex;align-items:center;gap:10px;padding:8px 0;cursor:pointer;font-size:15px"><input type="checkbox" id="wachOpt" ${wachAn()?"checked":""} style="width:24px;height:24px;margin:0"> Bildschirm nicht automatisch sperren, solange die App offen ist ${"wakeLock" in navigator?"":`<span class="small muted">(von diesem Browser nicht unterstützt)</span>`}</label>
   ${backend==="db"&&localHasData()?`<div class="info">In diesem Browser liegen noch lokal gespeicherte Daten. <button class="b sm" id="migr">In die Cloud übernehmen</button></div>`:""}
   <h3>💾 Backup – Daten zwischen PC und iPad mitnehmen</h3>
   <p class="small" style="margin-top:-4px"><b>So geht’s:</b> Am Gerät, an dem du gerade fertig bist, <b>„Backup erstellen“</b> → Datei ans andere Gerät schicken (AirDrop, Mail, USB-Stick, Google Drive …) → dort <b>„Backup laden“</b>. Danach hat das andere Gerät <b>exakt denselben Stand</b> und du arbeitest dort weiter. Später genauso wieder zurück.</p>
@@ -1513,6 +1531,7 @@ function bind(){
       try{const s=wiederherstellen(j);modal(`<h3 style="margin-top:0">Sicherung wiederhergestellt ✓</h3><table><tbody><tr><td>Bewerbe</td><td class="n"><b>${s.bewerbe}</b></td></tr><tr><td>Personen</td><td class="n"><b>${s.schuetzen}</b></td></tr><tr><td>Ergebnisse</td><td class="n"><b>${s.ergebnisse}</b></td></tr><tr><td>Gelöschte Einträge zurückgeholt</td><td class="n"><b>${s.zurueck}</b></td></tr></tbody></table><div class="right"><button class="b" id="abgOk">OK</button></div>`,()=>{$("#abgOk").onclick=closeModal})}
       catch(x){console.error(x);toast("Wiederherstellen fehlgeschlagen: "+(x.message||"Fehler"))}},"Ja, wiederherstellen"," ")};
     rd.readAsText(f)});
+  on("wachOpt","change",e=>{try{localStorage.setItem("ksv_wach",e.target.checked?"1":"0")}catch(x){}if(e.target.checked)wachHalten();else wachLos();toast(e.target.checked?"Bildschirm bleibt an, solange die App offen ist.":"Bildschirm sperrt wieder normal.")});
   on("backupBtn","click",()=>$("#backupFile").click());
   on("backupFile","change",e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{
     e.target.value="";let j;try{j=JSON.parse(rd.result);pruefeDatei(j)}catch(x){toast("Das ist keine KSV-Bewerbe-Backup-Datei.");return}
@@ -1577,7 +1596,7 @@ function bindForm(b){
 
 
 /* ================= Offline-App (PWA) ================= */
-const APP_VERSION="9f7083ee";
+const APP_VERSION="e0af5d40";
 if("serviceWorker" in navigator&&location.protocol.startsWith("http")){
   window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").then(r=>{
     r.addEventListener("updatefound",()=>{const n=r.installing;n&&n.addEventListener("statechange",()=>{if(n.state==="installed"&&navigator.serviceWorker.controller)toast("Neue App-Version geladen – beim nächsten Öffnen aktiv.")})})
