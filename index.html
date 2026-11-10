@@ -124,6 +124,16 @@ tr.click{cursor:pointer} tr.click:hover{background:var(--accsoft)}
 body.mituhr main{padding-bottom:90px}.uhroptitel{margin-top:140px;padding-top:14px;border-top:1px solid var(--line);font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}.uhrsound{display:flex;gap:28px;justify-content:center;margin-top:10px;flex-wrap:wrap}.uhrsound label{display:flex;align-items:center;gap:10px;font-size:17px;cursor:pointer;margin:0;padding:10px 6px}.uhrsound input{width:24px;height:24px;margin:0;accent-color:var(--acc)}
 #uhrMini{position:fixed;right:16px;bottom:16px;z-index:15;display:flex;align-items:center;gap:10px;background:var(--acc2);color:#fff;border:none;border-radius:14px;padding:10px 18px;box-shadow:0 4px 16px rgba(0,0,0,.25);cursor:pointer;font:inherit}#uhrMini[hidden]{display:none}#uhrMini .tabico{width:26px;height:26px;margin:0}#uhrMini .mlab{font-size:13px;opacity:.85}#uhrMini .mzeit{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums}#uhrMini .mzeit .uhrz{color:rgba(255,255,255,.75)}#uhrMini.pause{background:#5d6f76}#uhrMini.ende{background:#c62828;animation:uhrblink 1s infinite}@keyframes uhrblink{50%{opacity:.6}}@media print{#uhrMini{display:none!important}}
 .uhranz.lgelb{color:#e0a800;animation:uhrblink .8s infinite}.uhranz.lrot{color:#c62828;animation:uhrblink .5s infinite}.uhranz.lende{color:#c62828}#uhrMini.gelb{background:#c99700;animation:uhrblink .8s infinite}.uhrcard{position:relative}.uhrhaupt{text-align:center}.uhrtitel{font-size:15px;font-weight:600;color:var(--muted);margin-top:4px}.uhrprog{position:absolute;top:20px;right:14px;display:flex;flex-direction:column;gap:10px;width:auto!important}.ladebtn{display:flex;align-items:center;gap:8px;font:inherit;font-size:17px;font-weight:600;padding:12px 18px;border-radius:999px;border:2px solid #00acc1;background:none;color:#00acc1;cursor:pointer;white-space:nowrap}.ladebtn .tabico{width:1.3em;height:1.3em;margin:0}.ladebtn.on{background:#00acc1;color:#fff}@media (max-width:1000px){.uhrprog{gap:8px;top:16px;right:10px}.ladebtn{font-size:15px;padding:8px 14px}}@media (max-width:640px){.uhrprog{position:static;flex-direction:row;flex-wrap:wrap;justify-content:center;margin-top:14px}}
+.padtoggle{display:flex;align-items:center;gap:10px;margin:10px 0 0;font-size:14px;cursor:pointer;padding:8px 0}.padtoggle input{width:22px;height:22px;margin:0}
+.ziffernblock{position:fixed;left:0;right:0;bottom:0;z-index:12;background:var(--card);border-top:2px solid var(--acc);box-shadow:0 -4px 16px rgba(0,0,0,.15);padding:8px 10px calc(8px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:6px}
+.padrow{display:flex;gap:6px;justify-content:center}
+.padkey{flex:1 1 0;max-width:96px;min-height:58px;font:inherit;font-size:24px;font-weight:700;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);cursor:pointer;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+.padkey:active{transform:scale(.95);background:var(--accsoft)}
+.padkey.px{background:var(--acc);color:#fff;border-color:var(--acc)}.padkey.pf{background:#c0392b;color:#fff;border-color:#c0392b}
+.padkey.pb,.padkey.pr{font-size:17px;max-width:200px;flex:2 1 0}.padkey.pn{font-size:20px}
+.padkey.pm{background:#7a3e9d;color:#fff;border-color:#7a3e9d}.padkey.pm[aria-pressed="true"]{outline:4px solid #e0a800}
+.shot.padfokus{outline:3px solid var(--acc);outline-offset:1px;background:var(--accsoft)}
+body.mitpad main{padding-bottom:170px}body.mitpad #uhrMini{bottom:170px}body.mitpad #toast{bottom:160px;z-index:20}
 </style>
 </head>
 <body>
@@ -444,6 +454,7 @@ document.querySelectorAll("header [data-v]").forEach(bt=>bt.onclick=()=>{UI.view
 document.addEventListener("input",e=>{if(e.target&&e.target.id&&e.target.closest&&e.target.closest("#app"))e.target.dataset.dirty="1"});
 function clearDirty(){document.querySelectorAll("#app [data-dirty]").forEach(e=>delete e.dataset.dirty)}
 function render(keepInputs){
+  document.body.classList.remove("mitpad");
   // Stand-Auswahl zurücksetzen, sobald die Übersicht „Ergebnis erfassen“ verlassen wird
   if(!(UI.view==="bewerbe"&&UI.bewerbId&&UI.tab==="erfassung"&&!UI.dg&&!UI.editErg))UI.sw=null;
   const dirty={};if(keepInputs)document.querySelectorAll("#app [data-dirty='1']").forEach(e=>{if(e.id&&e.tagName!=="SELECT"&&e.type!=="checkbox"&&e.type!=="file")dirty[e.id]=e.value});
@@ -465,6 +476,17 @@ function render(keepInputs){
 
 
 
+/* ================= Ziffernblock für die Trefferaufnahme ================= */
+function padAn(){try{const v=localStorage.getItem("ksv_pad");if(v!==null)return v==="1"}catch(e){}return !!(window.matchMedia&&matchMedia("(pointer:coarse)").matches)}
+function padHTML(b,si){
+  const se=b.serien[si]||{},mr=Number(se.maxRing)||10,minus=Number(se.minRing)<0;
+  const zahlen=[];for(let n=mr;n>=0;n--)zahlen.push(n);
+  const k=(v,l,c,extra)=>`<button type="button" class="padkey ${c||""}" data-pad="${v}" ${extra||""}>${l}</button>`;
+  return `<div class="ziffernblock" id="zblock">
+    <div class="padrow">${k("X","X","px")}${zahlen.map(n=>k(n,n)).join("")}${k("F","F","pf")}</div>
+    <div class="padrow">${minus?k("-","−","pm",UI.padMinus?'aria-pressed="true"':""):""}${k("back","⌫ Löschen","pb")}${k("prev","◀","pn")}${k("next","▶","pn")}${k("row","Nächster Stand ↵","pr")}</div>
+  </div>`;
+}
 /* ================= Bildschirm wach halten (iPad sperrt sonst nach kurzer Zeit) ================= */
 let wachLock=null;
 function wachAn(){try{return localStorage.getItem("ksv_wach")!=="0"}catch(e){return true}}
@@ -709,7 +731,7 @@ function vDurchgang(b){
     <td style="white-space:nowrap;width:1%"><div style="display:flex;flex-direction:row;gap:3px">${kaliberErlaubt(b).map(k=>`<label class="kalbox ${r.kal===k?"on":""}"><input type="checkbox" data-kal="${k}" data-rid="${r.id}" ${r.kal===k?"checked":""}> ${k}</label>`).join("")}</div></td>
     <td class="ser-small dg-bisher">${vorher}</td>
     <td><div class="flex" style="gap:4px;flex-wrap:nowrap">${(()=>{const sch=Number(b.serien[si].schuss)||5;const alt=String((r.schuss||[])[si]||"").split(",");
-      return Array.from({length:sch},(_,k)=>`<input type="text" autocomplete="off" class="shot" id="sh_${r.id}_${si}_${k}" data-rid="${r.id}" data-k="${k}" inputmode="${Number(b.serien[si].minRing)<0?"text":"numeric"}" maxlength="3" value="${esc(String(alt[k]||"").replace(/^x$/,"X").replace(/^f$/,"F"))}" style="text-align:center;font-size:19px;padding:8px 1px;width:39px">`).join("")})()}
+      return Array.from({length:sch},(_,k)=>`<input type="text" autocomplete="off" class="shot" id="sh_${r.id}_${si}_${k}" data-rid="${r.id}" data-k="${k}" inputmode="${padAn()?"none":Number(b.serien[si].minRing)<0?"text":"numeric"}" maxlength="3" value="${esc(String(alt[k]||"").replace(/^x$/,"X").replace(/^f$/,"F"))}" style="text-align:center;font-size:19px;padding:8px 1px;width:39px">`).join("")})()}
       <button class="b g" data-rowx="${r.id}" data-val="X" tabindex="-1" title="X (Innenzehner = 10) in das aktuelle bzw. nächste freie Feld" style="padding:8px 12px;margin-left:8px;font-weight:700">X</button>
       <button class="b d" data-rowx="${r.id}" data-val="F" tabindex="-1" title="F (Fehlschuss = 0) in das aktuelle bzw. nächste freie Feld" style="padding:8px 12px;margin-left:28px;font-weight:700">F</button>
       ${Number(b.serien[si].minRing)<0?`<button class="b" data-minus="${r.id}" tabindex="-1" title="Minus: Vorzeichen im aktuellen bzw. nächsten freien Feld umschalten" style="padding:8px 14px;margin-left:14px;font-weight:700;background:#7a3e9d;border-color:#7a3e9d">−</button>`:""}</div>
@@ -718,9 +740,11 @@ function vDurchgang(b){
     <td class="n">${r.serien.every(v=>v==null||v==="")?`<button class="b d sm" data-dgdel="${r.id}" title="Stand aus dem Durchgang entfernen" style="min-width:32px;padding:8px 8px">×</button>`:""}</td></tr>`}).join("")}
   </tbody></table></div>
   <div id="dgWarn"></div><div id="dgWarnName"></div>
+  <label class="padtoggle"><input type="checkbox" id="padOpt" ${padAn()?"checked":""}> Ziffernblock der App verwenden (statt Bildschirmtastatur)</label>
+  ${padAn()?padHTML(b,si):""}
   <div class="flex" style="margin-top:12px"><div class="flex sp"><input id="dgAddStand" type="number" min="1" placeholder="Stand Nr." style="width:110px"><button class="b g sm" id="dgAdd">+ Stand hinzufügen</button></div>
   <button class="b" id="dgSave" style="font-size:16px;padding:10px 20px">Serie ${si+1} speichern${si<n-1?" → weiter":""}</button></div>
-  <p class="small muted">Eingabe je Schuss: 0–10, x (Innenzehner = 10 Ringe) oder F (Fehlschuss = 0)${Number(b.serien[si].minRing)<0?`, im Spaß-Programm auch Minuspunkte bis ${b.serien[si].minRing} (lila „−“-Taste schaltet das Vorzeichen um)`:""}. Nach jedem Wert springt der Cursor zum nächsten Schuss desselben Teilnehmers (nach „1“ wartet er auf die 0). Werte über 10 werden als Warnung markiert und nicht gespeichert. Mit Enter oder Tab geht es weiter zum nächsten Stand. Gespeichert wird erst mit „Serie … speichern“. Leere Felder bleiben offen und können später nachgetragen werden. Bereits gespeicherte Serien lassen sich über „Serie wählen“ korrigieren.</p>
+  <p class="small muted">${padAn()?"<b>Ziffernblock:</b> Feld antippen, dann je Schuss eine Taste (X, 10 … 0, F) – der Cursor springt automatisch weiter. „Nächster Stand ↵“ springt zum nächsten Schützen. ":""}Eingabe je Schuss: 0–10, x (Innenzehner = 10 Ringe) oder F (Fehlschuss = 0)${Number(b.serien[si].minRing)<0?`, im Spaß-Programm auch Minuspunkte bis ${b.serien[si].minRing} (lila „−“-Taste schaltet das Vorzeichen um)`:""}. Nach jedem Wert springt der Cursor zum nächsten Schuss desselben Teilnehmers (nach „1“ wartet er auf die 0). Werte über 10 werden als Warnung markiert und nicht gespeichert. Mit Enter oder Tab geht es weiter zum nächsten Stand. Gespeichert wird erst mit „Serie … speichern“. Leere Felder bleiben offen und können später nachgetragen werden. Bereits gespeicherte Serien lassen sich über „Serie wählen“ korrigieren.</p>
   </div>`;
 }
 function vKomplett(b){
@@ -1421,6 +1445,24 @@ function bind(){
       const row=shots.filter(i=>i.dataset.rid===bt.dataset.minus);const t=row.find(i=>i.id===UI.lastShot)||row.find(i=>i.value==="")||row[row.length-1];if(!t)return;
       const v=t.value.trim();t.value=v.startsWith("-")?v.slice(1):(/^(x|f)$/i.test(v)?"-":"-"+v);t.dataset.dirty="1";dgUpdate();t.focus();
       if(/^-[2-9]$|^-10$/.test(t.value))weiterInZeile(t)})});
+    on("padOpt","change",e=>{try{localStorage.setItem("ksv_pad",e.target.checked?"1":"0")}catch(x){}render(true);setTimeout(()=>{const f=document.getElementById(UI.lastShot)||shots.find(i=>i.value==="");f&&f.focus({preventScroll:true})},50)});
+    const padZiel=()=>document.getElementById(UI.lastShot)&&shots.includes(document.getElementById(UI.lastShot))?document.getElementById(UI.lastShot):(shots.find(i=>i.value==="")||shots[0]);
+    const markiere=()=>{shots.forEach(s=>s.classList.toggle("padfokus",s.id===UI.lastShot))};
+    shots.forEach(i=>i.addEventListener("focus",markiere));
+    document.querySelectorAll("[data-pad]").forEach(bt=>{bt.addEventListener("mousedown",e=>e.preventDefault());bt.addEventListener("pointerdown",e=>{if(e.pointerType!=="mouse")e.preventDefault()});
+      bt.addEventListener("click",()=>{const v=bt.dataset.pad,t=padZiel();if(!t)return;const row=shots.filter(s=>s.dataset.rid===t.dataset.rid),ix=shots.indexOf(t);
+        const fokus=el=>{if(!el)return;UI.lastShot=el.id;el.focus({preventScroll:true});markiere();const r=el.getBoundingClientRect(),pad=document.getElementById("zblock"),ph=pad?pad.getBoundingClientRect().top:innerHeight;if(r.bottom>ph-10||r.top<80)el.scrollIntoView({block:"center"})};
+        if(v==="back"){const k=row.indexOf(t);let z=t;if(t.value===""&&k>0)z=row[k-1];z.value="";z.dataset.dirty="1";dgUpdate();fokus(z);return} // Löschen nur innerhalb dieses Standes
+        if(v==="prev"){fokus(shots[ix-1]||t);return}
+        if(v==="next"){fokus(shots[ix+1]||t);return}
+        if(v==="row"){const rids=[...new Set(shots.map(s=>s.dataset.rid))],ri=rids.indexOf(t.dataset.rid),nr=rids[ri+1];if(nr){const nrow=shots.filter(s=>s.dataset.rid===nr);fokus(nrow.find(s=>s.value==="")||nrow[0])}else toast("Das war der letzte Stand – jetzt „Serie speichern“.");return}
+        if(v==="-"){UI.padMinus=!UI.padMinus;bt.setAttribute("aria-pressed",UI.padMinus?"true":"false");return}
+        let w=v;if(/^\d+$/.test(v)&&UI.padMinus&&v!=="0"){w="-"+v;UI.padMinus=false;const m=document.querySelector('[data-pad="-"]');m&&m.setAttribute("aria-pressed","false")}
+        t.value=w;t.dataset.dirty="1";dgUpdate();
+        const s=shotInfo(t);if(s.warn){toast("⚠ "+s.warn);fokus(t);return}
+        const k=row.indexOf(t);fokus(row[k+1]||t)});
+    });
+    if(padAn()){markiere();document.body.classList.add("mitpad")}
     if(shots.length)dgUpdate();
     on("dgSave","click",()=>{
       if(dgUpdate()){toast("⚠ Werte über 10 bzw. ungültige Werte – bitte korrigieren.");const f=shots.find(i=>i.classList.contains("bad"));f&&f.focus();return}
@@ -1596,7 +1638,7 @@ function bindForm(b){
 
 
 /* ================= Offline-App (PWA) ================= */
-const APP_VERSION="e0af5d40";
+const APP_VERSION="82601faa";
 if("serviceWorker" in navigator&&location.protocol.startsWith("http")){
   window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").then(r=>{
     r.addEventListener("updatefound",()=>{const n=r.installing;n&&n.addEventListener("statechange",()=>{if(n.state==="installed"&&navigator.serviceWorker.controller)toast("Neue App-Version geladen – beim nächsten Öffnen aktiv.")})})
