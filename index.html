@@ -477,7 +477,7 @@ function render(keepInputs){
 
 
 /* ================= Ziffernblock für die Trefferaufnahme ================= */
-function padAn(){try{const v=localStorage.getItem("ksv_pad");if(v!==null)return v==="1"}catch(e){}return !!(window.matchMedia&&matchMedia("(pointer:coarse)").matches)}
+function padAn(){return true} // Ziffernblock in der Trefferaufnahme immer aktiv (Tastatur am PC funktioniert zusätzlich)
 function padHTML(b,si){
   const se=b.serien[si]||{},mr=Number(se.maxRing)||10,minus=Number(se.minRing)<0;
   const zahlen=[];for(let n=mr;n>=1;n--)zahlen.push(n); // keine 0-Taste: dafür gibt es F
@@ -740,7 +740,6 @@ function vDurchgang(b){
     <td class="n">${r.serien.every(v=>v==null||v==="")?`<button class="b d sm" data-dgdel="${r.id}" title="Stand aus dem Durchgang entfernen" style="min-width:32px;padding:8px 8px">×</button>`:""}</td></tr>`}).join("")}
   </tbody></table></div>
   <div id="dgWarn"></div><div id="dgWarnName"></div>
-  <label class="padtoggle"><input type="checkbox" id="padOpt" ${padAn()?"checked":""}> Ziffernblock der App verwenden (statt Bildschirmtastatur)</label>
   ${padAn()?padHTML(b,si):""}
   <div class="flex" style="margin-top:12px"><div class="flex sp"><input id="dgAddStand" type="number" min="1" placeholder="Stand Nr." style="width:110px"><button class="b g sm" id="dgAdd">+ Stand hinzufügen</button></div>
   <button class="b" id="dgSave" style="font-size:16px;padding:10px 20px">Serie ${si+1} speichern${si<n-1?" → weiter":""}</button></div>
@@ -1462,7 +1461,7 @@ function bind(){
         const s=shotInfo(t);if(s.warn){toast("⚠ "+s.warn);fokus(t);return}
         const k=row.indexOf(t);fokus(row[k+1]||t)});
     });
-    if(padAn()){markiere();document.body.classList.add("mitpad")}
+    if(padAn()&&shots.length&&document.getElementById("zblock")){markiere();document.body.classList.add("mitpad")}
     if(shots.length)dgUpdate();
     on("dgSave","click",()=>{
       if(dgUpdate()){toast("⚠ Werte über 10 bzw. ungültige Werte – bitte korrigieren.");const f=shots.find(i=>i.classList.contains("bad"));f&&f.focus();return}
@@ -1638,7 +1637,7 @@ function bindForm(b){
 
 
 /* ================= Offline-App (PWA) ================= */
-const APP_VERSION="076b3056";
+const APP_VERSION="994a5c62";
 if("serviceWorker" in navigator&&location.protocol.startsWith("http")){
   window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").then(r=>{
     r.addEventListener("updatefound",()=>{const n=r.installing;n&&n.addEventListener("statechange",()=>{if(n.state==="installed"&&navigator.serviceWorker.controller)toast("Neue App-Version geladen – beim nächsten Öffnen aktiv.")})})
