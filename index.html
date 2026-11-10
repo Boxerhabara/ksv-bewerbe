@@ -480,7 +480,7 @@ function render(keepInputs){
 function padAn(){try{const v=localStorage.getItem("ksv_pad");if(v!==null)return v==="1"}catch(e){}return !!(window.matchMedia&&matchMedia("(pointer:coarse)").matches)}
 function padHTML(b,si){
   const se=b.serien[si]||{},mr=Number(se.maxRing)||10,minus=Number(se.minRing)<0;
-  const zahlen=[];for(let n=mr;n>=0;n--)zahlen.push(n);
+  const zahlen=[];for(let n=mr;n>=1;n--)zahlen.push(n); // keine 0-Taste: dafür gibt es F
   const k=(v,l,c,extra)=>`<button type="button" class="padkey ${c||""}" data-pad="${v}" ${extra||""}>${l}</button>`;
   return `<div class="ziffernblock" id="zblock">
     <div class="padrow">${k("X","X","px")}${zahlen.map(n=>k(n,n)).join("")}${k("F","F","pf")}</div>
@@ -744,7 +744,7 @@ function vDurchgang(b){
   ${padAn()?padHTML(b,si):""}
   <div class="flex" style="margin-top:12px"><div class="flex sp"><input id="dgAddStand" type="number" min="1" placeholder="Stand Nr." style="width:110px"><button class="b g sm" id="dgAdd">+ Stand hinzufügen</button></div>
   <button class="b" id="dgSave" style="font-size:16px;padding:10px 20px">Serie ${si+1} speichern${si<n-1?" → weiter":""}</button></div>
-  <p class="small muted">${padAn()?"<b>Ziffernblock:</b> Feld antippen, dann je Schuss eine Taste (X, 10 … 0, F) – der Cursor springt automatisch weiter. „Nächster Stand ↵“ springt zum nächsten Schützen. ":""}Eingabe je Schuss: 0–10, x (Innenzehner = 10 Ringe) oder F (Fehlschuss = 0)${Number(b.serien[si].minRing)<0?`, im Spaß-Programm auch Minuspunkte bis ${b.serien[si].minRing} (lila „−“-Taste schaltet das Vorzeichen um)`:""}. Nach jedem Wert springt der Cursor zum nächsten Schuss desselben Teilnehmers (nach „1“ wartet er auf die 0). Werte über 10 werden als Warnung markiert und nicht gespeichert. Mit Enter oder Tab geht es weiter zum nächsten Stand. Gespeichert wird erst mit „Serie … speichern“. Leere Felder bleiben offen und können später nachgetragen werden. Bereits gespeicherte Serien lassen sich über „Serie wählen“ korrigieren.</p>
+  <p class="small muted">${padAn()?"<b>Ziffernblock:</b> Feld antippen, dann je Schuss eine Taste (X, 10 … 1, F für 0) – der Cursor springt automatisch weiter. „Nächster Stand ↵“ springt zum nächsten Schützen. ":""}Eingabe je Schuss: 0–10, x (Innenzehner = 10 Ringe) oder F (Fehlschuss = 0)${Number(b.serien[si].minRing)<0?`, im Spaß-Programm auch Minuspunkte bis ${b.serien[si].minRing} (lila „−“-Taste schaltet das Vorzeichen um)`:""}. Nach jedem Wert springt der Cursor zum nächsten Schuss desselben Teilnehmers (nach „1“ wartet er auf die 0). Werte über 10 werden als Warnung markiert und nicht gespeichert. Mit Enter oder Tab geht es weiter zum nächsten Stand. Gespeichert wird erst mit „Serie … speichern“. Leere Felder bleiben offen und können später nachgetragen werden. Bereits gespeicherte Serien lassen sich über „Serie wählen“ korrigieren.</p>
   </div>`;
 }
 function vKomplett(b){
@@ -1638,7 +1638,7 @@ function bindForm(b){
 
 
 /* ================= Offline-App (PWA) ================= */
-const APP_VERSION="82601faa";
+const APP_VERSION="076b3056";
 if("serviceWorker" in navigator&&location.protocol.startsWith("http")){
   window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").then(r=>{
     r.addEventListener("updatefound",()=>{const n=r.installing;n&&n.addEventListener("statechange",()=>{if(n.state==="installed"&&navigator.serviceWorker.controller)toast("Neue App-Version geladen – beim nächsten Öffnen aktiv.")})})
