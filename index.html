@@ -957,10 +957,10 @@ function vDaten(){
   <label style="display:flex;align-items:center;gap:10px;padding:8px 0;cursor:pointer;font-size:15px"><input type="checkbox" id="wachOpt" ${wachAn()?"checked":""} style="width:24px;height:24px;margin:0"> Bildschirm nicht automatisch sperren, solange die App offen ist ${"wakeLock" in navigator?"":`<span class="small muted">(von diesem Browser nicht unterstützt)</span>`}</label>
   ${backend==="db"&&localHasData()?`<div class="info">In diesem Browser liegen noch lokal gespeicherte Daten. <button class="b sm" id="migr">In die Cloud übernehmen</button></div>`:""}
   <h3>💾 Backup – Daten zwischen PC und iPad mitnehmen</h3>
-  <p class="small" style="margin-top:-4px"><b>So geht’s:</b> Am Gerät, an dem du gerade fertig bist, <b>„Backup erstellen“</b> → Datei ans andere Gerät schicken (AirDrop, Mail, USB-Stick, Google Drive …) → dort <b>„Backup laden“</b>. Danach hat das andere Gerät <b>exakt denselben Stand</b> und du arbeitest dort weiter. Später genauso wieder zurück.</p>
+  <p class="small" style="margin-top:-4px"><b>So geht’s:</b> Am Gerät, an dem du gerade fertig bist, <b>„Backup erstellen“</b> → im gemeinsamen Ordner (iCloud Drive / Google Drive) speichern – die Datei heißt immer <b>KSV_Backup_AKTUELL.json</b>, die alte wird dabei <b>ersetzt</b>. Am anderen Gerät <b>„Backup laden“</b> → dieselbe Datei wählen. Danach hat es <b>exakt denselben Stand</b>. Ohne Internet am selben Ort: per AirDrop schicken.</p>
   <div class="row"><div style="flex:0 1 260px"><label>Name dieses Geräts (erscheint im Dateinamen)</label><input id="geraetName" value="${esc(geraetName())}" placeholder="z. B. iPad Roman"></div></div>
   ${(()=>{try{const l=JSON.parse(localStorage.getItem("ksv_letztes_backup")||"null");return l?`<p class="small">Zuletzt geladenes Backup: <b>${l.von?"„"+esc(l.von)+"“, ":""}${l.datei?new Date(l.datei).toLocaleString("de-AT"):""}</b> (geladen am ${new Date(l.zeit).toLocaleString("de-AT")})</p>`:""}catch(e){return ""}})()}
-  <div class="flex" style="margin-top:8px;gap:10px;flex-wrap:wrap"><button class="b" id="expJson" style="font-size:17px;padding:12px 22px">⬆ Backup erstellen</button>
+  <div class="flex" style="margin-top:8px;gap:10px;flex-wrap:wrap"><button class="b" id="expJson" style="font-size:17px;padding:12px 22px">⬆ Backup erstellen</button><button class="b g sm" id="expJsonDatum" title="Zusätzliche Archiv-Kopie mit Datum und Uhrzeit im Dateinamen" style="align-self:center">Archiv-Kopie mit Datum</button>
   <button class="b g" id="backupBtn" style="font-size:17px;padding:12px 22px">⬇ Backup laden</button><input type="file" id="backupFile" style="display:none"></div>
   <p class="small muted" style="margin-top:6px">„Backup laden“ <b>ersetzt alle Daten auf diesem Gerät</b> durch den Stand aus der Datei. Vorher kommt eine Abfrage, und das Laden kann danach einmal rückgängig gemacht werden.</p>
   ${(()=>{try{const v=JSON.parse(localStorage.getItem("ksv_vor_backup")||"null");return v?`<div class="info small">Vor dem letzten „Backup laden“ (${new Date(v.zeit).toLocaleString("de-AT")}) wurde der alte Stand dieses Geräts aufgehoben. <button class="b g sm" id="backupUndo">↶ Rückgängig machen</button></div>`:""}catch(e){return ""}})()}
@@ -1553,7 +1553,14 @@ function bind(){
   on("sMulti","click",()=>mehrfachDialog([...(UI.sSel||[])]));
   // Daten
   on("geraetName","change",e=>{try{localStorage.setItem("ksv_geraet",e.target.value.trim())}catch(x){}toast("Gerätename gespeichert.")});
-  on("expJson","click",()=>{const g=(geraetName()||"Geraet").replace(/[^\wäöüÄÖÜß-]+/g,"_");const d=new Date(),p=n=>String(n).padStart(2,"0");
+  on("expJson","click",async()=>{ // immer derselbe Name → überschreibt das alte Backup im gemeinsamen Ordner
+    const name="KSV_Backup_AKTUELL.json",inhalt=JSON.stringify(abgleichDaten(),null,1);
+    if(!downloads&&!IST_IOS&&window.showSaveFilePicker){ // PC (Chrome/Edge): Ordner wählen, vorhandene Datei direkt ersetzen
+      try{const h=await showSaveFilePicker({suggestedName:name,id:"ksvbackup",types:[{description:"KSV-Backup",accept:{"application/json":[".json"]}}]});
+        const w=await h.createWritable();await w.write(inhalt);await w.close();toast("Backup gespeichert: "+h.name);return}
+      catch(e){if(e&&e.name==="AbortError")return}}
+    anbieten(name,inhalt,"application/json")});
+  on("expJsonDatum","click",()=>{const g=(geraetName()||"Geraet").replace(/[^\wäöüÄÖÜß-]+/g,"_");const d=new Date(),p=n=>String(n).padStart(2,"0");
     anbieten(`KSV_Backup_${g}_${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}_${p(d.getHours())}-${p(d.getMinutes())}.json`,JSON.stringify(abgleichDaten(),null,1),"application/json")});
   on("cpJson","click",()=>kopieren(JSON.stringify(abgleichDaten())));
   on("impFile","change",e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{
@@ -1637,7 +1644,7 @@ function bindForm(b){
 
 
 /* ================= Offline-App (PWA) ================= */
-const APP_VERSION="994a5c62";
+const APP_VERSION="c670bdb7";
 if("serviceWorker" in navigator&&location.protocol.startsWith("http")){
   window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").then(r=>{
     r.addEventListener("updatefound",()=>{const n=r.installing;n&&n.addEventListener("statechange",()=>{if(n.state==="installed"&&navigator.serviceWorker.controller)toast("Neue App-Version geladen – beim nächsten Öffnen aktiv.")})})
