@@ -782,7 +782,7 @@ function vDurchgang(b){
       return Array.from({length:sch},(_,k)=>`<input type="text" autocomplete="off" class="shot" id="sh_${r.id}_${si}_${k}" data-rid="${r.id}" data-k="${k}" inputmode="${padAn()?"none":Number(b.serien[si].minRing)<0?"text":"numeric"}" maxlength="3" value="${esc(String(alt[k]||"").replace(/^x$/,"X").replace(/^f$/,"F"))}" style="text-align:center;font-size:19px;padding:8px 1px;width:39px">`).join("")})()}
       <button class="b g" data-rowx="${r.id}" data-val="X" tabindex="-1" title="X (Innenzehner = 10) in das aktuelle bzw. nächste freie Feld" style="padding:8px 12px;margin-left:8px;font-weight:700">X</button>
       <button class="b d" data-rowx="${r.id}" data-val="F" tabindex="-1" title="F (Fehlschuss = 0) in das aktuelle bzw. nächste freie Feld" style="padding:8px 12px;margin-left:28px;font-weight:700">F</button>
-      ${Number(b.serien[si].minRing)<0?`<button class="b" data-minus="${r.id}" tabindex="-1" title="Minus: Vorzeichen im aktuellen bzw. nächsten freien Feld umschalten" style="padding:8px 14px;margin-left:14px;font-weight:700;background:#7a3e9d;border-color:#7a3e9d">−</button>`:""}</div>
+      </div>
       ${r.serien[si]!=null&&r.serien[si]!==""&&!(r.schuss||[])[si]?`<div class="small muted">gespeichert: ${serAnzeige(r.serien[si],(r.xs||[])[si])} (ohne Einzelschüsse)</div>`:""}</td>
     <td class="n"><b id="dgsum_${r.id}">${num(summe(r))}</b><div class="small" style="color:var(--acc)" id="dgx_${r.id}">${xSumme(r)?xSumme(r)+"x":""}</div></td>
     <td class="n">${r.serien.every(v=>v==null||v==="")?`<button class="b d sm" data-dgdel="${r.id}" title="Stand aus dem Durchgang entfernen" style="min-width:32px;padding:8px 8px">×</button>`:""}</td></tr>`}).join("")}
@@ -2127,7 +2127,7 @@ function bindForm(b){
 
 
 /* ================= Offline-App (PWA) ================= */
-const APP_VERSION="a2c945e7";
+const APP_VERSION="acd41104";
 if("serviceWorker" in navigator&&location.protocol.startsWith("http")){
   window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").then(r=>{
     r.addEventListener("updatefound",()=>{const n=r.installing;n&&n.addEventListener("statechange",()=>{if(n.state==="installed"&&navigator.serviceWorker.controller)toast("Neue App-Version geladen – beim nächsten Öffnen aktiv.")})})
