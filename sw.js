@@ -1,5 +1,5 @@
-// Service Worker – hält die App offline verfügbar (Version 61391a27)
-const CACHE="ksv-bewerbe-61391a27";
+// Service Worker – hält die App offline verfügbar (Version f7daef84)
+const CACHE="ksv-bewerbe-f7daef84";
 const FILES=["./", "./index.html", "./manifest.webmanifest", "./apple-touch-icon.png", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png"];
 self.addEventListener("install",e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES)).then(()=>self.skipWaiting()))});
 self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
