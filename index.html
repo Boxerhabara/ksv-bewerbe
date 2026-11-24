@@ -253,7 +253,7 @@ async function vorBackupLoeschen(){VOR_BACKUP=null;if(IDB_OK){try{await IDB.del(
 /* ---- „💾 Speichern“: Datenbank in eine selbst gewählte Datei; am PC (Chrome/Edge) wird dieselbe Datei überschrieben ---- */
 let AENDERUNG=0; // zählt jede Datenänderung
 let UNGESP=(()=>{try{return localStorage.getItem("ksv_ungespeichert")==="1"}catch(e){return false}})(); // Änderungen seit dem letzten Speichern in eine Datei
-function ungespHinweis(){const el=document.getElementById("ungesp");if(el)el.hidden=!(UNGESP&&backend!=="db")}
+function ungespHinweis(){const el=document.getElementById("ungesp");if(el)el.hidden=!UNGESP}
 function markUngespeichert(){if(UNGESP)return;UNGESP=true;try{localStorage.setItem("ksv_ungespeichert","1")}catch(e){}ungespHinweis()}
 function markGespeichert(){UNGESP=false;try{localStorage.setItem("ksv_ungespeichert","0")}catch(e){}ungespHinweis()}
 const DATEI={h:null,meta:null,gespeichert:-1,laeuft:false,
@@ -2134,7 +2134,7 @@ function bindForm(b){
 
 
 /* ================= Offline-App (PWA) ================= */
-const APP_VERSION="f7daef84";
+const APP_VERSION="0e6634a1";
 if("serviceWorker" in navigator&&location.protocol.startsWith("http")){
   window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").then(r=>{
     r.addEventListener("updatefound",()=>{const n=r.installing;n&&n.addEventListener("statechange",()=>{if(n.state==="installed"&&navigator.serviceWorker.controller)toast("Neue App-Version geladen – beim nächsten Öffnen aktiv.")})})
